@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "src/content/demos/level-3.html"
+        ],
+        "createdAt": "2026-11-24T06:32:55.659Z",
+        "reason": "assistant decided: unedited model-generated comparison fixture; editing it would break the same-conditions fairness rule in docs/prompt-lab-spec.md section 12"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "src/content/demos/level-2.html"
+        ],
+        "createdAt": "2026-11-24T06:32:55.689Z",
+        "reason": "assistant decided: unedited model-generated comparison fixture; editing it would break the same-conditions fairness rule in docs/prompt-lab-spec.md section 12"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          "src/content/demos/level-2.html"
+        ],
+        "createdAt": "2026-11-24T06:32:55.714Z",
+        "reason": "assistant decided: unedited model-generated comparison fixture; editing it would break the same-conditions fairness rule in docs/prompt-lab-spec.md section 12"
+      }
+    ]
+  }
+}

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>운동 기록</title>
+<style>
+  :root {
+    --bg: #0f1210;
+    --surface: #181c19;
+    --surface-2: #1f2420;
+    --line: #2c332d;
+    --text: #eef2ea;
+    --muted: #9aa39a;
+    --accent: #c6f24e;
+    --on-accent: #12160b;
+    --strength: #c6f24e;
+    --cardio: #5cc8ff;
+    --stretch: #ffb057;
+    --danger: #ff7a6b;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 96px; }
+
+  header.top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 12px; margin-bottom: 20px;
+  }
+  header.top h1 {
+    margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: -0.03em; font-weight: 800;
+  }
+  header.top h1 span { color: var(--accent); }
+  .today { color: var(--muted); font-size: 13px; text-align: right; white-space: nowrap; }
+
+  /* 요약 */
+  .stats {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12px; }
+  .stat .value {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2;
+    font-variant-numeric: tabular-nums; margin-top: 2px;
+  }
+  .stat .value small { font-size: 13px; font-weight: 600; color: var(--muted); margin-left: 3px; }
+  .stat.hl .value { color: var(--accent); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px;
+  }
+  .card h2 {
+    margin: 0 0 14px; font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+
+  /* 차트 */
+  .chart-card { margin-bottom: 14px; }
+  .legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); font-weight: 500; }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; }
+  .chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+  .col .n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; height: 18px; }
+  .col .track {
+    width: 100%; max-width: 44px; height: 110px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border-bottom: 2px solid var(--line);
+  }
+  .col .bar {
+    display: flex; flex-direction: column-reverse; gap: 2px;
+    border-radius: 6px 6px 0 0; overflow: hidden;
+    transition: height .35s ease;
+  }
+  .col .seg { flex-grow: 1; min-height: 3px; }
+  .col .d { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.25; }
+  .col .d b { display: block; color: var(--text); font-weight: 600; }
+  .col.is-today .d b { color: var(--accent); }
+
+  /* 레이아웃 */
+  .main { display: grid; gap: 14px; }
+  @media (min-width: 840px) {
+    .stats { grid-template-columns: repeat(4, 1fr); }
+    .main { grid-template-columns: 360px 1fr; align-items: start; }
+    .form-card { position: sticky; top: 16px; }
+  }
+
+  /* 폼 */
+  .seg-ctrl {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px;
+    margin-bottom: 14px;
+  }
+  .seg-ctrl button {
+    border: 0; background: transparent; border-radius: 7px; padding: 9px 4px;
+    font-weight: 600; color: var(--muted); min-height: 40px;
+  }
+  .seg-ctrl button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+  .seg-ctrl button .dot, .tag .dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field label, .field .lbl { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+  .field input, .field textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; font-size: 16px; min-height: 44px; color-scheme: dark;
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field input.invalid { border-color: var(--danger); }
+  .row { display: grid; gap: 8px; }
+  .row.c3 { grid-template-columns: repeat(3, 1fr); }
+  .row.c2 { grid-template-columns: repeat(2, 1fr); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chips button {
+    border: 1px solid var(--line); background: transparent; border-radius: 999px;
+    padding: 5px 11px; font-size: 13px; color: var(--muted);
+  }
+  .chips button:hover { color: var(--text); border-color: var(--muted); }
+
+  .err { color: var(--danger); font-size: 13px; min-height: 20px; margin: 2px 0 8px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px;
+    padding: 11px 16px; font-weight: 700; min-height: 46px;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); flex: 1; }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(1px); }
+
+  /* 목록 */
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .filters button {
+    border: 1px solid var(--line); background: transparent; border-radius: 999px;
+    padding: 6px 13px; font-size: 13px; font-weight: 600; color: var(--muted); min-height: 34px;
+  }
+  .filters button[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  .day { margin-top: 18px; }
+  .day-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid var(--line);
+  }
+  .day-head b { color: var(--text); font-size: 14px; }
+  .item {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .item.editing { background: linear-gradient(90deg, rgba(198,242,78,.08), transparent); margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 8px; }
+  .item .name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .tag { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 8px; white-space: nowrap; }
+  .item .detail { color: var(--text); font-variant-numeric: tabular-nums; font-size: 14px; }
+  .item .detail em { font-style: normal; color: var(--muted); margin-left: 8px; }
+  .item .memo { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; margin-top: 2px; }
+  .item .ops { display: flex; gap: 4px; grid-row: 1 / span 2; grid-column: 2; }
+  .item .ops button {
+    border: 0; background: transparent; color: var(--muted); font-size: 13px;
+    padding: 8px 8px; border-radius: 8px; min-height: 36px;
+  }
+  .item .ops button:hover { background: var(--surface-2); color: var(--text); }
+  .item .ops button.del:hover { color: var(--danger); }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 12px 24px; }
+  .empty b { display: block; color: var(--text); font-size: 16px; margin-bottom: 4px; }
+
+  /* 토스트 */
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 20px);
+    background: var(--text); color: var(--bg); border-radius: 12px;
+    padding: 10px 10px 10px 16px; display: flex; align-items: center; gap: 12px;
+    font-weight: 600; font-size: 14px; max-width: calc(100vw - 32px);
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45); z-index: 10;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast button {
+    border: 0; background: var(--bg); color: var(--accent); border-radius: 8px;
+    padding: 7px 12px; font-weight: 700; white-space: nowrap;
+  }
+  .toast span { padding: 6px 6px 6px 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>운동 기록<span>.</span></h1>
+    <div class="today" id="todayLabel"></div>
+  </header>
+
+  <section class="stats" aria-label="최근 7일 요약">
+    <div class="stat hl"><div class="label">연속 기록</div><div class="value" id="sStreak">0<small>일</small></div></div>
+    <div class="stat"><div class="label">최근 7일 운동한 날</div><div class="value" id="sDays">0<small>/ 7일</small></div></div>
+    <div class="stat"><div class="label">최근 7일 근력 볼륨</div><div class="value" id="sVolume">0<small>kg</small></div></div>
+    <div class="stat"><div class="label">최근 7일 유산소·스트레칭</div><div class="value" id="sMinutes">0<small>분</small></div></div>
+  </section>
+
+  <section class="card chart-card">
+    <h2>
+      <span>최근 7일 기록 수</span>
+      <span class="legend">
+        <span><i style="background:var(--strength)"></i>근력</span>
+        <span><i style="background:var(--cardio)"></i>유산소</span>
+        <span><i style="background:var(--stretch)"></i>스트레칭</span>
+      </span>
+    </h2>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <div class="main">
+    <section class="card form-card">
+      <h2 id="formTitle">운동 추가</h2>
+      <form id="form" novalidate>
+        <div class="seg-ctrl" role="group" aria-label="운동 종류">
+          <button type="button" data-type="strength" aria-pressed="true"><span class="dot" style="background:var(--strength)"></span>근력</button>
+          <button type="button" data-type="cardio" aria-pressed="false"><span class="dot" style="background:var(--cardio)"></span>유산소</button>
+          <button type="button" data-type="stretch" aria-pressed="false"><span class="dot" style="background:var(--stretch)"></span>스트레칭</button>
+        </div>
+
+        <div class="field">
+          <label for="fDate">날짜</label>
+          <input type="date" id="fDate" required>
+        </div>
+
+        <div class="field">
+          <label for="fName">운동 이름</label>
+          <input type="text" id="fName" maxlength="30" placeholder="예: 스쿼트" autocomplete="off">
+          <div class="chips" id="chips" aria-label="자주 하는 운동"></div>
+        </div>
+
+        <div class="field" id="grpStrength">
+          <div class="row c3">
+            <div><label for="fWeight">무게 (kg)</label><input type="number" id="fWeight" inputmode="decimal" min="0" step="0.5" placeholder="0"></div>
+            <div><label for="fReps">횟수</label><input type="number" id="fReps" inputmode="numeric" min="1" step="1" placeholder="10"></div>
+            <div><label for="fSets">세트</label><input type="number" id="fSets" inputmode="numeric" min="1" step="1" placeholder="3"></div>
+          </div>
+          <div class="hint">맨몸 운동은 무게를 비워 두세요.</div>
+        </div>
+
+        <div class="field" id="grpTime" hidden>
+          <div class="row c2">
+            <div><label for="fMin">시간 (분)</label><input type="number" id="fMin" inputmode="numeric" min="1" step="1" placeholder="30"></div>
+            <div id="distWrap"><label for="fDist">거리 (km, 선택)</label><input type="number" id="fDist" inputmode="decimal" min="0" step="0.1" placeholder="5"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fMemo">메모 (선택)</label>
+          <textarea id="fMemo" maxlength="100" rows="2" placeholder="컨디션, 느낀 점 등"></textarea>
+        </div>
+
+        <div class="err" id="err" role="alert"></div>
+        <div class="actions">
+          <button type="submit" class="btn primary" id="submitBtn">기록 저장</button>
+          <button type="button" class="btn" id="cancelBtn" hidden>취소</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2><span>기록 목록</span><span class="legend" id="countLabel"></span></h2>
+      <div class="filters" role="group" aria-label="종류 필터">
+        <button type="button" data-filter="all" aria-pressed="true">전체</button>
+        <button type="button" data-filter="strength" aria-pressed="false">근력</button>
+        <button type="button" data-filter="cardio" aria-pressed="false">유산소</button>
+        <button type="button" data-filter="stretch" aria-pressed="false">스트레칭</button>
+      </div>
+      <div id="list"></div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastMsg"></span>
+  <button type="button" id="undoBtn">실행 취소</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var TYPES = {
+    strength: { label: '근력', color: 'var(--strength)', chips: ['스쿼트', '벤치프레스', '데드리프트', '풀업', '푸시업'] },
+    cardio:   { label: '유산소', color: 'var(--cardio)', chips: ['러닝', '사이클', '수영', '줄넘기', '걷기'] },
+    stretch:  { label: '스트레칭', color: 'var(--stretch)', chips: ['요가', '폼롤러', '전신 스트레칭', '필라테스'] }
+  };
+  var WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function key(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parse(k) { var p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function daysAgo(n) { var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - n); return d; }
+  function num(n) { return Number(n).toLocaleString('ko-KR', { maximumFractionDigits: 1 }); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  var TODAY = key(daysAgo(0));
+  var nextId = 1;
+
+  function seed(ago, type, name, o) {
+    var r = { id: nextId++, date: key(daysAgo(ago)), type: type, name: name, memo: '' };
+    for (var k in o) r[k] = o[k];
+    return r;
+  }
+
+  var state = {
+    type: 'strength',
+    filter: 'all',
+    editingId: null,
+    lastDeleted: null,
+    records: [
+      seed(0, 'cardio', '러닝', { minutes: 28, distance: 4.5, memo: '아침 공복 러닝' }),
+      seed(1, 'strength', '스쿼트', { weight: 70, reps: 8, sets: 4 }),
+      seed(1, 'strength', '벤치프레스', { weight: 50, reps: 10, sets: 3 }),
+      seed(1, 'stretch', '폼롤러', { minutes: 10 }),
+      seed(2, 'cardio', '사이클', { minutes: 40, distance: 15 }),
+      seed(4, 'strength', '데드리프트', { weight: 90, reps: 5, sets: 3, memo: '허리 자세 신경 쓰기' }),
+      seed(4, 'strength', '풀업', { weight: 0, reps: 6, sets: 4 }),
+      seed(5, 'stretch', '요가', { minutes: 30 }),
+      seed(8, 'cardio', '수영', { minutes: 45, distance: 1.2 })
+    ]
+  };
+
+  /* ---------- 표시용 헬퍼 ---------- */
+  function dateLabel(k) {
+    var d = parse(k);
+    var base = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + WEEKDAYS[d.getDay()] + ')';
+    if (k === TODAY) return '오늘 · ' + base;
+    if (k === key(daysAgo(1))) return '어제 · ' + base;
+    return base;
+  }
+  function volume(r) { return r.type === 'strength' ? (r.weight || 0) * r.reps * r.sets : 0; }
+  function detail(r) {
+    if (r.type === 'strength') {
+      return (r.weight > 0 ? num(r.weight) + 'kg' : '맨몸') + ' × ' + r.reps + '회 × ' + r.sets + '세트';
+    }
+    var s = r.minutes + '분';
+    if (r.type === 'cardio' && r.distance > 0) s += ' · ' + num(r.distance) + 'km';
+    return s;
+  }
+
+  /* ---------- 요약 ---------- */
+  function setStat(id, value, unit) {
+    var n = $(id);
+    n.textContent = value;
+    n.appendChild(el('small', null, unit));
+  }
+  function renderStats() {
+    var from = key(daysAgo(6));
+    var days = {}, vol = 0, mins = 0, all = {};
+    state.records.forEach(function (r) {
+      all[r.date] = true;
+      if (r.date >= from && r.date <= TODAY) {
+        days[r.date] = true;
+        vol += volume(r);
+        if (r.type !== 'strength') mins += r.minutes;
+      }
+    });
+    // 연속 기록: 오늘(또는 오늘 기록이 없으면 어제)부터 거꾸로 센다
+    var streak = 0, i = all[TODAY] ? 0 : 1;
+    while (all[key(daysAgo(i))]) { streak++; i++; }
+
+    setStat('sStreak', streak, '일');
+    setStat('sDays', Object.keys(days).length, '/ 7일');
+    setStat('sVolume', num(vol), 'kg');
+    setStat('sMinutes', num(mins), '분');
+  }
+
+  /* ---------- 차트 ---------- */
+  function renderChart() {
+    var chart = $('chart');
+    chart.textContent = '';
+    var data = [], max = 1, i;
+    for (i = 6; i >= 0; i--) {
+      var d = daysAgo(i), k = key(d);
+      var c = { strength: 0, cardio: 0, stretch: 0 };
+      state.records.forEach(function (r) { if (r.date === k) c[r.type]++; });
+      var total = c.strength + c.cardio + c.stretch;
+      if (total > max) max = total;
+      data.push({ d: d, k: k, c: c, total: total });
+    }
+    data.forEach(function (x) {
+      var col = el('div', 'col' + (x.k === TODAY ? ' is-today' : ''));
+      col.setAttribute('role', 'img');
+      col.setAttribute('aria-label', dateLabel(x.k) + ' 기록 ' + x.total + '개');
+      col.appendChild(el('div', 'n', x.total ? x.total : ''));
+      var track = el('div', 'track');
+      var bar = el('div', 'bar');
+      bar.style.height = (x.total / max * 100) + '%';
+      ['strength', 'cardio', 'stretch'].forEach(function (t) {
+        if (!x.c[t]) return;
+        var seg = el('div', 'seg');
+        seg.style.flexGrow = x.c[t];
+        seg.style.background = TYPES[t].color;
+        bar.appendChild(seg);
+      });
+      track.appendChild(bar);
+      col.appendChild(track);
+      var lab = el('div', 'd');
+      lab.appendChild(el('b', null, x.k === TODAY ? '오늘' : WEEKDAYS[x.d.getDay()]));
+      lab.appendChild(document.createTextNode((x.d.getMonth() + 1) + '/' + x.d.getDate()));
+      col.appendChild(lab);
+      chart.appendChild(col);
+    });
+  }
+
+  /* ---------- 목록 ---------- */
+  function renderList() {
+    var list = $('list');
+    list.textContent = '';
+    var rows = state.records.filter(function (r) { return state.filter === 'all' || r.type === state.filter; });
+    rows.sort(function (a, b) { return a.date === b.date ? b.id - a.id : (a.date < b.date ? 1 : -1); });
+    $('countLabel').textContent = '총 ' + rows.length + '개';
+
+    if (!rows.length) {
+      var empty = el('div', 'empty');
+      empty.appendChild(el('b', null, state.records.length ? '이 종류의 기록이 없어요' : '아직 기록이 없어요'));
+      empty.appendChild(document.createTextNode(state.records.length ? '다른 필터를 선택하거나 새 운동을 추가해 보세요.' : '첫 운동을 기록해 보세요.'));
+      list.appendChild(empty);
+      return;
+    }
+
+    var current = null, group = null;
+    rows.forEach(function (r) {
+      if (r.date !== current) {
+        current = r.date;
+        group = el('div', 'day');
+        var head = el('div', 'day-head');
+        head.appendChild(el('b', null, dateLabel(r.date)));
+        var n = rows.filter(function (x) { return x.date === r.date; }).length;
+        head.appendChild(el('span', null, n + '개'));
+        group.appendChild(head);
+        list.appendChild(group);
+      }
+      var item = el('div', 'item' + (r.id === state.editingId ? ' editing' : ''));
+      var title = el('div', 'name', r.name);
+      var tag = el('span', 'tag');
+      var dot = el('span', 'dot');
+      dot.style.background = TYPES[r.type].color;
+      tag.appendChild(dot);
+      tag.appendChild(document.createTextNode(TYPES[r.type].label));
+      title.appendChild(tag);
+      item.appendChild(title);
+
+      var ops = el('div', 'ops');
+      var edit = el('button', null, '수정');
+      edit.type = 'button';
+      edit.setAttribute('aria-label', r.name + ' 수정');
+      edit.addEventListener('click', function () { startEdit(r.id); });
+      var del = el('button', 'del', '삭제');
+      del.type = 'button';
+      del.setAttribute('aria-label', r.name + ' 삭제');
+      del.addEventListener('click', function () { remove(r.id); });
+      ops.appendChild(edit);
+      ops.appendChild(del);
+      item.appendChild(ops);
+
+      var body = el('div');
+      var det = el('div', 'detail', detail(r));
+      if (r.type === 'strength' && volume(r) > 0) det.appendChild(el('em', null, '볼륨 ' + num(volume(r)) + 'kg'));
+      body.appendChild(det);
+      if (r.memo) body.appendChild(el('div', 'memo', r.memo));
+      item.appendChild(body);
+      group.appendChild(item);
+    });
+  }
+
+  function render() { renderStats(); renderChart(); renderList(); }
+
+  /* ---------- 폼 ---------- */
+  var inputs = ['fDate', 'fName', 'fWeight', 'fReps', 'fSets', 'fMin', 'fDist'];
+
+  function setType(t) {
+    state.type = t;
+    document.querySelectorAll('.seg-ctrl button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.type === t ? 'true' : 'false');
+    });
+    $('grpStrength').hidden = t !== 'strength';
+    $('grpTime').hidden = t === 'strength';
+    $('distWrap').hidden = t !== 'cardio';
+    $('grpTime').firstElementChild.className = 'row ' + (t === 'cardio' ? 'c2' : '');
+    $('fName').placeholder = '예: ' + TYPES[t].chips[0];
+    var chips = $('chips');
+    chips.textContent = '';
+    TYPES[t].chips.forEach(function (name) {
+      var b = el('button', null, name);
+      b.type = 'button';
+      b.addEventListener('click', function () { $('fName').value = name; clearError(); });
+      chips.appendChild(b);
+    });
+    clearError();
+  }
+
+  function clearError() {
+    $('err').textContent = '';
+    inputs.forEach(function (id) { $(id).classList.remove('invalid'); });
+  }
+  function fail(id, msg) {
+    $('err').textContent = msg;
+    $(id).classList.add('invalid');
+    $(id).focus();
+    return null;
+  }
+
+  function readForm() {
+    clearError();
+    var date = $('fDate').value;
+    if (!date) return fail('fDate', '날짜를 선택해 주세요.');
+    if (date > TODAY) return fail('fDate', '미래 날짜는 기록할 수 없어요.');
+    var name = $('fName').value.trim();
+    if (!name) return fail('fName', '운동 이름을 입력해 주세요.');
+
+    var r = { date: date, type: state.type, name: name, memo: $('fMemo').value.trim() };
+    if (state.type === 'strength') {
+      var w = $('fWeight').value === '' ? 0 : Number($('fWeight').value);
+      var reps = Number($('fReps').value), sets = Number($('fSets').value);
+      if (!isFinite(w) || w < 0 || w > 1000) return fail('fWeight', '무게는 0~1000kg 사이로 입력해 주세요.');
+      if (!Number.isInteger(reps) || reps < 1 || reps > 1000) return fail('fReps', '횟수를 1 이상의 정수로 입력해 주세요.');
+      if (!Number.isInteger(sets) || sets < 1 || sets > 100) return fail('fSets', '세트 수를 1 이상의 정수로 입력해 주세요.');
+      r.weight = w; r.reps = reps; r.sets = sets;
+    } else {
+      var m = Number($('fMin').value);
+      if (!Number.isInteger(m) || m < 1 || m > 1440) return fail('fMin', '시간을 1분 이상의 정수로 입력해 주세요.');
+      r.minutes = m;
+      if (state.type === 'cardio') {
+        var dist = $('fDist').value === '' ? 0 : Number($('fDist').value);
+        if (!isFinite(dist) || dist < 0 || dist > 1000) return fail('fDist', '거리는 0~1000km 사이로 입력해 주세요.');
+        r.distance = dist;
+      }
+    }
+    return r;
+  }
+
+  function resetForm(keepDate) {
+    var date = keepDate ? $('fDate').value : TODAY;
+    $('form').reset();
+    $('fDate').value = date || TODAY;
+    state.editingId = null;
+    $('formTitle').textContent = '운동 추가';
+    $('submitBtn').textContent = '기록 저장';
+    $('cancelBtn').hidden = true;
+    clearError();
+  }
+
+  function startEdit(id) {
+    var r = state.records.filter(function (x) { return x.id === id; })[0];
+    if (!r) return;
+    state.editingId = id;
+    setType(r.type);
+    $('fDate').value = r.date;
+    $('fName').value = r.name;
+    $('fMemo').value = r.memo || '';
+    $('fWeight').value = r.weight ? r.weight : '';
+    $('fReps').value = r.reps || '';
+    $('fSets').value = r.sets || '';
+    $('fMin').value = r.minutes || '';
+    $('fDist').value = r.distance ? r.distance : '';
+    $('formTitle').textContent = '기록 수정';
+    $('submitBtn').textContent = '수정 저장';
+    $('cancelBtn').hidden = false;
+    renderList();
+    $('form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('fName').focus({ preventScroll: true });
+  }
+
+  function remove(id) {
+    var idx = -1;
+    state.records.forEach(function (r, i) { if (r.id === id) idx = i; });
+    if (idx < 0) return;
+    var removed = state.records.splice(idx, 1)[0];
+    state.lastDeleted = removed;
+    if (state.editingId === id) resetForm(false);
+    render();
+    toast('"' + removed.name + '" 기록을 삭제했어요.', true);
+  }
+
+  /* ---------- 토스트 ---------- */
+  var toastTimer = null;
+  function toast(msg, undo) {
+    $('toastMsg').textContent = msg;
+    $('undoBtn').hidden = !undo;
+    $('toast').classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, undo ? 6000 : 2500);
+  }
+  function hideToast() { $('toast').classList.remove('show'); }
+
+  /* ---------- 이벤트 ---------- */
+  document.querySelectorAll('.seg-ctrl button').forEach(function (b) {
+    b.addEventListener('click', function () { setType(b.dataset.type); });
+  });
+  document.querySelectorAll('.filters button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.filter = b.dataset.filter;
+      document.querySelectorAll('.filters button').forEach(function (x) {
+        x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+      });
+      renderList();
+    });
+  });
+  inputs.forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      if ($(id).classList.contains('invalid')) clearError();
+    });
+  });
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var r = readForm();
+    if (!r) return;
+    if (state.editingId != null) {
+      r.id = state.editingId;
+      state.records = state.records.map(function (x) { return x.id === r.id ? r : x; });
+      resetForm(false);
+      toast('기록을 수정했어요.', false);
+    } else {
+      r.id = nextId++;
+      state.records.push(r);
+      resetForm(true);
+      toast('"' + r.name + '" 기록을 저장했어요.', false);
+      $('fName').focus({ preventScroll: true });
+    }
+    render();
+  });
+
+  $('cancelBtn').addEventListener('click', function () { resetForm(false); renderList(); });
+
+  $('undoBtn').addEventListener('click', function () {
+    if (!state.lastDeleted) return;
+    state.records.push(state.lastDeleted);
+    state.lastDeleted = null;
+    hideToast();
+    render();
+  });
+
+  /* ---------- 초기화 ---------- */
+  (function init() {
+    var d = daysAgo(0);
+    $('todayLabel').textContent = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + WEEKDAYS[d.getDay()] + '요일';
+    $('fDate').max = TODAY;
+    $('fDate').value = TODAY;
+    setType('strength');
+    render();
+  })();
+})();
+</script>
+</body>
+</html>

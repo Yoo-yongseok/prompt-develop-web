@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>그린핏 - 운동 습관 기록</title>
+<style>
+  :root {
+    --bg: #050706;
+    --panel: #0d1210;
+    --panel2: #131a16;
+    --line: #1f2b24;
+    --green: #2bff88;
+    --green-mid: #17c964;
+    --green-dim: #0f6b3a;
+    --green-deep: #0a2a19;
+    --text: #eafff2;
+    --muted: #8aa596;
+    --warn: #ffd35c;
+    --danger: #ff6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(43,255,136,.16), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(43,255,136,.025) 0 2px, transparent 2px 14px);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 0 16px 96px;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; border: none; background: none; -webkit-tap-highlight-color: transparent; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .wrap { max-width: 520px; margin: 0 auto; }
+
+  header { padding: 22px 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .logo { font-size: 26px; font-weight: 900; font-style: italic; letter-spacing: -1px; line-height: 1; }
+  .logo span { color: var(--green); text-shadow: 0 0 18px rgba(43,255,136,.55); }
+  .logo small { display: block; font-size: 12px; font-weight: 500; font-style: normal; letter-spacing: 0; color: var(--muted); margin-top: 6px; }
+  .point-badge {
+    background: var(--green); color: #03130a; border-radius: 14px; padding: 8px 14px; text-align: right;
+    box-shadow: 0 0 24px rgba(43,255,136,.35); flex-shrink: 0;
+  }
+  .point-badge b { display: block; font-size: 20px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .point-badge i { font-style: normal; font-size: 11px; font-weight: 700; }
+
+  .card {
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    border: 1px solid var(--line); border-radius: 20px; padding: 18px; margin-bottom: 14px;
+  }
+  .card h2 { font-size: 15px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: ""; width: 4px; height: 15px; background: var(--green); border-radius: 2px; transform: skewX(-12deg); }
+  .card h2 em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 500; color: var(--muted); }
+
+  /* 오늘 */
+  .today { display: flex; align-items: center; gap: 18px; }
+  .ring { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 11; }
+  .ring .track { stroke: var(--green-deep); }
+  .ring .bar { stroke: var(--green); stroke-linecap: round; transition: stroke-dashoffset .6s ease; filter: drop-shadow(0 0 6px rgba(43,255,136,.6)); }
+  .ring .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring .center b { font-size: 30px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+  .ring .center span { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .today-info { flex: 1; min-width: 0; }
+  .today-info .big { font-size: 22px; font-weight: 900; line-height: 1.2; }
+  .today-info .big u { text-decoration: none; color: var(--green); }
+  .today-info p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+  .stat { background: #080c0a; border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; text-align: center; }
+  .stat b { display: block; font-size: 18px; font-weight: 900; color: var(--green); font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 11px; color: var(--muted); }
+  .level-bar { height: 8px; background: var(--green-deep); border-radius: 4px; margin-top: 14px; overflow: hidden; }
+  .level-bar div { height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green)); border-radius: 4px; transition: width .5s ease; }
+  .level-txt { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* 칩 */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    min-height: 40px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: #080c0a; color: var(--text); font-size: 14px; font-weight: 600; transition: all .15s;
+  }
+  .chip:active { transform: scale(.95); }
+  .chip.on { background: var(--green); border-color: var(--green); color: #03130a; font-weight: 800; }
+  .label { font-size: 12px; color: var(--muted); font-weight: 600; margin: 16px 0 8px; }
+  .label:first-of-type { margin-top: 0; }
+
+  /* 타이머 */
+  .timer-box { background: #050706; border: 1px solid var(--line); border-radius: 16px; padding: 16px; text-align: center; }
+  .timer-box.running { border-color: var(--green-mid); box-shadow: inset 0 0 30px rgba(43,255,136,.1); }
+  .clock { font-size: 48px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 1px; line-height: 1.1; color: var(--green); }
+  .timer-state { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn {
+    flex: 1; min-height: 48px; border-radius: 14px; font-weight: 800; font-size: 15px; padding: 10px 12px;
+    background: var(--green); color: #03130a; transition: transform .1s, filter .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; color: var(--green); border: 1.5px solid var(--green-dim); }
+  .btn.dark { background: var(--green-deep); color: var(--text); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; filter: none; transform: none; }
+
+  .manual { display: flex; gap: 8px; align-items: stretch; }
+  .num-in {
+    flex: 1; min-width: 0; display: flex; align-items: center; background: #050706; border: 1.5px solid var(--line);
+    border-radius: 14px; padding: 0 14px;
+  }
+  .num-in:focus-within { border-color: var(--green); }
+  .num-in input { flex: 1; min-width: 0; width: 100%; background: none; border: none; outline: none; font-size: 20px; font-weight: 800; height: 48px; font-variant-numeric: tabular-nums; }
+  .num-in span { color: var(--muted); font-size: 14px; }
+  .manual .btn { flex: 0 0 auto; padding: 0 20px; }
+  .err { color: var(--warn); font-size: 13px; min-height: 20px; margin-top: 6px; }
+
+  /* 목표 */
+  .goal-step { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .goal-step button {
+    width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--green-dim); color: var(--green);
+    font-size: 26px; font-weight: 700; line-height: 1; flex-shrink: 0;
+  }
+  .goal-step button:active { background: var(--green-deep); }
+  .goal-step button:disabled { opacity: .3; }
+  .goal-val { text-align: center; }
+  .goal-val b { font-size: 40px; font-weight: 900; color: var(--green); font-variant-numeric: tabular-nums; line-height: 1; }
+  .goal-val span { font-size: 15px; color: var(--muted); margin-left: 4px; }
+
+  /* 그래프 */
+  .tabs { display: flex; background: #050706; border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+  .tabs button { flex: 1; min-height: 38px; border-radius: 9px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .tabs button.on { background: var(--green-deep); color: var(--green); }
+  .plot { position: relative; height: 170px; display: flex; align-items: flex-end; gap: 6px; border-bottom: 1px solid var(--line); }
+  .col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; z-index: 1; padding: 0; }
+  .col .v { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+  .col .b { width: 100%; max-width: 34px; border-radius: 7px 7px 0 0; background: var(--green-dim); min-height: 3px; transition: height .5s ease; }
+  .col.hit .b { background: linear-gradient(180deg, var(--green), var(--green-mid)); box-shadow: 0 0 12px rgba(43,255,136,.4); }
+  .col.hit .v { color: var(--green); }
+  .col.zero .b { background: var(--line); }
+  .col.sel .b { outline: 2px solid var(--text); outline-offset: 2px; }
+  .goal-line { position: absolute; left: 0; right: 0; border-top: 1.5px dashed rgba(234,255,242,.45); z-index: 0; transition: bottom .5s ease; }
+  .goal-line span { position: absolute; right: 0; top: -19px; font-size: 10px; color: var(--text); background: var(--panel); padding: 0 4px; border-radius: 4px; }
+  .xlabels { display: flex; gap: 6px; margin-top: 6px; }
+  .xlabels span { flex: 1; text-align: center; font-size: 12px; color: var(--muted); }
+  .xlabels span.t { color: var(--green); font-weight: 800; }
+  .legend { display: flex; gap: 14px; font-size: 11px; color: var(--muted); margin-top: 12px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .readout { margin-top: 12px; background: #050706; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+  .readout b { color: var(--green); }
+  .hbar { display: grid; grid-template-columns: 52px 1fr 48px; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .hbar .t { height: 16px; background: var(--green-deep); border-radius: 8px; overflow: hidden; }
+  .hbar .t div { height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green)); border-radius: 8px; transition: width .5s ease; }
+  .hbar b { text-align: right; font-variant-numeric: tabular-nums; color: var(--green); }
+
+  /* 기록 */
+  .rec { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .rec:last-child { border-bottom: none; }
+  .rec .ic { width: 40px; height: 40px; border-radius: 12px; background: var(--green-deep); color: var(--green); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px; flex-shrink: 0; }
+  .rec .m { flex: 1; min-width: 0; }
+  .rec .m b { display: block; font-size: 14px; }
+  .rec .m span { font-size: 12px; color: var(--muted); }
+  .rec .p { font-size: 13px; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rec .del { width: 40px; height: 40px; border-radius: 10px; color: var(--muted); font-size: 18px; flex-shrink: 0; }
+  .rec .del:hover, .rec .del:active { color: var(--danger); background: rgba(255,107,107,.1); }
+  .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 20px 0; }
+  .reset-area { margin-top: 12px; text-align: center; }
+  .link { color: var(--muted); font-size: 13px; text-decoration: underline; min-height: 40px; padding: 8px; }
+  .confirm { background: #050706; border: 1px solid var(--danger); border-radius: 14px; padding: 14px; font-size: 14px; }
+  .confirm .btn.red { background: var(--danger); color: #1a0505; }
+  .note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 18px; }
+
+  /* 토스트 */
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 140%); width: calc(100% - 32px); max-width: 488px;
+    background: var(--green); color: #03130a; border-radius: 16px; padding: 14px 18px; font-weight: 800; font-size: 15px; text-align: center;
+    box-shadow: 0 10px 40px rgba(43,255,136,.4); transition: transform .35s cubic-bezier(.2,1.2,.4,1); z-index: 10; pointer-events: none;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+  .toast small { display: block; font-weight: 600; font-size: 12px; margin-top: 2px; }
+
+  @media (max-width: 360px) {
+    .today { flex-direction: column; text-align: center; }
+    .clock { font-size: 40px; }
+    .chip { padding: 8px 11px; font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">GREEN<span>FIT</span><small>매일 조금씩, 꾸준히 운동하기</small></div>
+    <div class="point-badge" aria-label="내 포인트"><b id="ptTotal">0</b><i>POINT</i></div>
+  </header>
+
+  <!-- 오늘 현황 -->
+  <section class="card" aria-label="오늘 현황">
+    <div class="today">
+      <div class="ring">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="track" cx="60" cy="60" r="52"></circle>
+          <circle class="bar" id="ringBar" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"></circle>
+        </svg>
+        <div class="center"><b id="ringPct">0%</b><span id="ringSub">0 / 30분</span></div>
+      </div>
+      <div class="today-info">
+        <div class="big" id="todayMsg"></div>
+        <p id="todaySub"></p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stStreak">0일</b><span>연속 운동</span></div>
+      <div class="stat"><b id="stWeek">0분</b><span>최근 7일</span></div>
+      <div class="stat"><b id="stLevel">Lv.1</b><span>내 레벨</span></div>
+    </div>
+    <div class="level-bar"><div id="lvFill" style="width:0%"></div></div>
+    <div class="level-txt"><span id="lvNow"></span><span id="lvNext"></span></div>
+  </section>
+
+  <!-- 운동 기록 -->
+  <section class="card">
+    <h2>운동 기록하기 <em>1분 = 10P</em></h2>
+    <div class="label">운동 종목</div>
+    <div class="chips" id="typeChips"></div>
+
+    <div class="label">타이머로 기록</div>
+    <div class="timer-box" id="timerBox">
+      <div class="timer-state" id="timerState">시작 버튼을 누르고 운동을 시작하세요</div>
+      <div class="clock" id="clock">00:00</div>
+      <div class="btn-row">
+        <button class="btn" id="btnStart">시작</button>
+        <button class="btn dark" id="btnSaveTimer" disabled>종료 후 저장</button>
+        <button class="btn ghost" id="btnResetTimer" disabled>초기화</button>
+      </div>
+    </div>
+
+    <div class="label">직접 입력</div>
+    <div class="manual">
+      <label class="num-in"><input type="number" id="minInput" inputmode="numeric" min="1" max="600" placeholder="0" aria-label="운동 시간(분)"><span>분</span></label>
+      <button class="btn" id="btnAdd">기록 추가</button>
+    </div>
+    <div class="chips" style="margin-top:8px">
+      <button class="chip" data-quick="10">+10분</button>
+      <button class="chip" data-quick="20">+20분</button>
+      <button class="chip" data-quick="30">+30분</button>
+      <button class="chip" data-quick="60">+60분</button>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+
+  <!-- 목표 -->
+  <section class="card">
+    <h2>하루 운동 목표 <em>달성 시 +100P</em></h2>
+    <div class="goal-step">
+      <button id="goalMinus" aria-label="목표 10분 줄이기">−</button>
+      <div class="goal-val"><b id="goalVal">30</b><span>분 / 하루</span></div>
+      <button id="goalPlus" aria-label="목표 10분 늘리기">+</button>
+    </div>
+    <div class="chips" id="goalChips"></div>
+  </section>
+
+  <!-- 그래프 -->
+  <section class="card">
+    <h2>운동 그래프 <em>최근 7일</em></h2>
+    <div class="tabs" role="tablist">
+      <button id="tabDay" class="on" role="tab">날짜별</button>
+      <button id="tabType" role="tab">종목별</button>
+    </div>
+    <div id="chartDay">
+      <div class="plot" id="plot"></div>
+      <div class="xlabels" id="xlabels"></div>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i>목표 달성</span>
+        <span><i style="background:var(--green-dim)"></i>목표 미달</span>
+        <span><i style="background:transparent;border-top:2px dashed rgba(234,255,242,.6);border-radius:0;height:0;vertical-align:3px"></i>목표선</span>
+      </div>
+      <div class="readout" id="readout"></div>
+    </div>
+    <div id="chartType" hidden></div>
+  </section>
+
+  <!-- 기록 목록 -->
+  <section class="card">
+    <h2>운동 기록 <em id="recCount"></em></h2>
+    <div id="recList"></div>
+    <div class="reset-area" id="resetArea"></div>
+  </section>
+
+  <p class="note">처음 보이는 지난 기록은 예시 데이터예요. 기록은 이 화면을 닫으면 사라집니다.</p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var TYPES = ['달리기', '축구', '농구', '줄넘기', '자전거', '수영', '근력', '기타'];
+  var GOAL_PRESETS = [20, 30, 45, 60, 90];
+  var PT_PER_MIN = 10, BONUS = 100, LEVEL_STEP = 1000;
+  var WEEK = ['일', '월', '화', '수', '목', '금', '토'];
+  var RING_LEN = 2 * Math.PI * 52;
+
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function keyOf(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function dayOffset(n) { var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return d; }
+  function todayKey() { return keyOf(new Date()); }
+
+  var state = {
+    goal: 30,
+    records: [],
+    bonus: {},          // 날짜별 목표 달성 보너스 여부
+    type: TYPES[0],
+    tab: 'day',
+    selDay: todayKey(),
+    confirmReset: false,
+    nextId: 1,
+    timer: { running: false, acc: 0, startAt: 0 }
+  };
+
+  // 예시 데이터
+  [[6, '달리기', 25], [5, '축구', 40], [3, '줄넘기', 20], [2, '농구', 35], [2, '근력', 15], [1, '자전거', 45]].forEach(function (s) {
+    state.records.push({ id: state.nextId++, day: keyOf(dayOffset(s[0])), type: s[1], min: s[2], time: '예시' });
+  });
+  (function () {
+    var t = totalsByDay();
+    Object.keys(t).forEach(function (k) { if (t[k] >= state.goal) state.bonus[k] = true; });
+  })();
+
+  function totalsByDay() {
+    var t = {};
+    state.records.forEach(function (r) { t[r.day] = (t[r.day] || 0) + r.min; });
+    return t;
+  }
+  function totalPoints() {
+    var m = state.records.reduce(function (a, r) { return a + r.min; }, 0);
+    return m * PT_PER_MIN + Object.keys(state.bonus).length * BONUS;
+  }
+  function streak(t) {
+    var n = 0, i = t[todayKey()] ? 0 : 1;
+    while (t[keyOf(dayOffset(i))]) { n++; i++; }
+    return n;
+  }
+  // 오늘 보너스 다시 계산. 새로 달성했으면 true 반환
+  function syncTodayBonus() {
+    var k = todayKey(), tot = totalsByDay()[k] || 0, had = !!state.bonus[k];
+    if (tot >= state.goal) { state.bonus[k] = true; return !had; }
+    delete state.bonus[k];
+    return false;
+  }
+
+  var toastTimer = null;
+  function toast(msg, sub) {
+    var el = $('toast');
+    el.innerHTML = '';
+    el.appendChild(document.createTextNode(msg));
+    if (sub) { var s = document.createElement('small'); s.textContent = sub; el.appendChild(s); }
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  function addRecord(min) {
+    var now = new Date();
+    state.records.push({
+      id: state.nextId++, day: keyOf(now), type: state.type, min: min,
+      time: pad(now.getHours()) + ':' + pad(now.getMinutes())
+    });
+    var newly = syncTodayBonus();
+    state.selDay = todayKey();
+    render();
+    var pts = min * PT_PER_MIN;
+    if (newly) toast('목표 달성! +' + (pts + BONUS).toLocaleString() + 'P', state.type + ' ' + min + '분 ' + pts + 'P + 달성 보너스 ' + BONUS + 'P');
+    else toast('+' + pts.toLocaleString() + 'P 획득!', state.type + ' ' + min + '분 기록 완료');
+  }
+
+  /* ---------- 렌더 ---------- */
+  function render() {
+    var t = totalsByDay(), tk = todayKey(), today = t[tk] || 0, goal = state.goal;
+    var pct = Math.round(today / goal * 100);
+    $('ringBar').style.strokeDashoffset = RING_LEN * (1 - Math.min(1, today / goal));
+    $('ringPct').textContent = pct + '%';
+    $('ringSub').textContent = today + ' / ' + goal + '분';
+
+    var msg = $('todayMsg'), sub = $('todaySub');
+    if (today >= goal) { msg.innerHTML = '오늘 목표 <u>달성!</u>'; sub.textContent = '멋져요! 보너스 ' + BONUS + 'P를 받았어요.'; }
+    else if (today > 0) { msg.innerHTML = '<u>' + (goal - today) + '분</u>만 더!'; sub.textContent = '조금만 더 하면 보너스 ' + BONUS + 'P를 받아요.'; }
+    else { msg.innerHTML = '오늘도 <u>시작</u>해 볼까요?'; sub.textContent = '목표 ' + goal + '분을 채우면 보너스 ' + BONUS + 'P!'; }
+
+    var pts = totalPoints(), lv = Math.floor(pts / LEVEL_STEP) + 1, inLv = pts % LEVEL_STEP;
+    $('ptTotal').textContent = pts.toLocaleString();
+    $('stStreak').textContent = streak(t) + '일';
+    var week = 0;
+    for (var i = 0; i < 7; i++) week += t[keyOf(dayOffset(i))] || 0;
+    $('stWeek').textContent = week + '분';
+    $('stLevel').textContent = 'Lv.' + lv;
+    $('lvFill').style.width = (inLv / LEVEL_STEP * 100) + '%';
+    $('lvNow').textContent = 'Lv.' + lv + ' · ' + inLv + ' / ' + LEVEL_STEP + 'P';
+    $('lvNext').textContent = '다음 레벨까지 ' + (LEVEL_STEP - inLv) + 'P';
+
+    // 종목 칩
+    $('typeChips').innerHTML = TYPES.map(function (x) {
+      return '<button class="chip' + (x === state.type ? ' on' : '') + '" data-type="' + x + '" aria-pressed="' + (x === state.type) + '">' + x + '</button>';
+    }).join('');
+
+    // 목표
+    $('goalVal').textContent = goal;
+    $('goalMinus').disabled = goal <= 10;
+    $('goalPlus').disabled = goal >= 300;
+    $('goalChips').innerHTML = GOAL_PRESETS.map(function (g) {
+      return '<button class="chip' + (g === goal ? ' on' : '') + '" data-goal="' + g + '">' + g + '분</button>';
+    }).join('');
+
+    renderChart(t);
+    renderList();
+  }
+
+  function renderChart(t) {
+    $('tabDay').classList.toggle('on', state.tab === 'day');
+    $('tabType').classList.toggle('on', state.tab === 'type');
+    $('chartDay').hidden = state.tab !== 'day';
+    $('chartType').hidden = state.tab !== 'type';
+
+    var days = [], i;
+    for (i = 6; i >= 0; i--) days.push(dayOffset(i));
+    var tk = todayKey();
+
+    if (state.tab === 'day') {
+      var max = state.goal;
+      days.forEach(function (d) { max = Math.max(max, t[keyOf(d)] || 0); });
+      max = max * 1.25;
+      var html = '<div class="goal-line" style="bottom:' + (state.goal / max * 100) + '%"><span>목표 ' + state.goal + '분</span></div>';
+      var xl = '';
+      days.forEach(function (d) {
+        var k = keyOf(d), v = t[k] || 0;
+        var cls = 'col' + (v >= state.goal ? ' hit' : '') + (v === 0 ? ' zero' : '') + (k === state.selDay ? ' sel' : '');
+        html += '<button class="' + cls + '" data-day="' + k + '" aria-label="' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + v + '분">' +
+          '<span class="v">' + (v || '') + '</span><span class="b" style="height:' + (v / max * 100) + '%"></span></button>';
+        xl += '<span class="' + (k === tk ? 't' : '') + '">' + (k === tk ? '오늘' : WEEK[d.getDay()]) + '</span>';
+      });
+      $('plot').innerHTML = html;
+      $('xlabels').innerHTML = xl;
+
+      var sd = days.filter(function (d) { return keyOf(d) === state.selDay; })[0] || days[6];
+      var sk = keyOf(sd), sv = t[sk] || 0;
+      var parts = state.records.filter(function (r) { return r.day === sk; }).map(function (r) { return r.type + ' ' + r.min + '분'; });
+      $('readout').innerHTML = '<b>' + (sd.getMonth() + 1) + '월 ' + sd.getDate() + '일 (' + WEEK[sd.getDay()] + ')</b> · 총 ' + sv + '분' +
+        (sv >= state.goal ? ' · 목표 달성' : '') + '<br>' + (parts.length ? parts.join(', ') : '운동 기록이 없어요. 막대를 눌러 다른 날도 확인해 보세요.');
+    } else {
+      var keys = {}, by = {}, mx = 0;
+      days.forEach(function (d) { keys[keyOf(d)] = 1; });
+      state.records.forEach(function (r) { if (keys[r.day]) by[r.type] = (by[r.type] || 0) + r.min; });
+      var list = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
+      list.forEach(function (k) { mx = Math.max(mx, by[k]); });
+      $('chartType').innerHTML = list.length ? list.map(function (k) {
+        return '<div class="hbar"><span>' + k + '</span><div class="t"><div style="width:' + (by[k] / mx * 100) + '%"></div></div><b>' + by[k] + '분</b></div>';
+      }).join('') : '<div class="empty">최근 7일 동안 기록이 없어요.</div>';
+    }
+  }
+
+  function renderList() {
+    var tk = todayKey();
+    var recs = state.records.slice().sort(function (a, b) { return a.day === b.day ? b.id - a.id : (a.day < b.day ? 1 : -1); });
+    $('recCount').textContent = '총 ' + recs.length + '개';
+    $('recList').innerHTML = recs.length ? recs.map(function (r) {
+      var p = r.day.split('-');
+      var when = (r.day === tk ? '오늘' : (+p[1]) + '월 ' + (+p[2]) + '일') + (r.time === '예시' ? ' · 예시' : ' · ' + r.time);
+      return '<div class="rec"><div class="ic">' + r.type.charAt(0) + '</div><div class="m"><b>' + r.type + ' ' + r.min + '분</b><span>' + when + '</span></div>' +
+        '<div class="p">+' + (r.min * PT_PER_MIN) + 'P</div><button class="del" data-del="' + r.id + '" aria-label="' + r.type + ' ' + r.min + '분 기록 삭제">✕</button></div>';
+    }).join('') : '<div class="empty">아직 기록이 없어요.<br>위에서 첫 운동을 기록해 보세요!</div>';
+
+    var ra = $('resetArea');
+    if (!recs.length) ra.innerHTML = '';
+    else if (state.confirmReset) {
+      ra.innerHTML = '<div class="confirm">모든 기록과 포인트가 지워져요. 정말 지울까요?<div class="btn-row"><button class="btn red" id="resetYes">모두 지우기</button><button class="btn ghost" id="resetNo">취소</button></div></div>';
+    } else ra.innerHTML = '<button class="link" id="resetAsk">모든 기록 지우기</button>';
+  }
+
+  /* ---------- 타이머 ---------- */
+  function elapsed() { var tm = state.timer; return tm.acc + (tm.running ? Date.now() - tm.startAt : 0); }
+  function renderTimer() {
+    var ms = elapsed(), s = Math.floor(ms / 1000), tm = state.timer;
+    var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+    $('clock').textContent = (h ? pad(h) + ':' : '') + pad(m) + ':' + pad(sec);
+    $('btnStart').textContent = tm.running ? '일시정지' : (ms > 0 ? '계속하기' : '시작');
+    $('btnSaveTimer').disabled = ms < 1000;
+    $('btnResetTimer').disabled = ms === 0;
+    $('timerBox').classList.toggle('running', tm.running);
+    $('timerState').textContent = tm.running ? state.type + ' 운동 중... 힘내요!' : (ms > 0 ? '일시정지됨 · 저장하거나 계속하세요' : '시작 버튼을 누르고 운동을 시작하세요');
+  }
+  setInterval(function () { if (state.timer.running) renderTimer(); }, 250);
+
+  $('btnStart').addEventListener('click', function () {
+    var tm = state.timer;
+    if (tm.running) { tm.acc += Date.now() - tm.startAt; tm.running = false; }
+    else { tm.startAt = Date.now(); tm.running = true; }
+    renderTimer();
+  });
+  $('btnSaveTimer').addEventListener('click', function () {
+    var ms = elapsed();
+    if (ms < 1000) return;
+    var min = Math.min(600, Math.max(1, Math.ceil(ms / 60000)));
+    state.timer = { running: false, acc: 0, startAt: 0 };
+    renderTimer();
+    addRecord(min);
+  });
+  $('btnResetTimer').addEventListener('click', function () {
+    state.timer = { running: false, acc: 0, startAt: 0 };
+    renderTimer();
+  });
+
+  /* ---------- 직접 입력 ---------- */
+  function submitManual() {
+    var raw = $('minInput').value.trim(), n = Number(raw);
+    if (!raw) { $('err').textContent = '운동 시간을 분 단위로 입력해 주세요.'; return; }
+    if (!isFinite(n) || n < 1 || Math.floor(n) !== n) { $('err').textContent = '1 이상의 숫자(분)로 입력해 주세요.'; return; }
+    if (n > 600) { $('err').textContent = '한 번에 600분까지만 기록할 수 있어요.'; return; }
+    $('err').textContent = '';
+    $('minInput').value = '';
+    addRecord(n);
+  }
+  $('btnAdd').addEventListener('click', submitManual);
+  $('minInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitManual(); });
+  $('minInput').addEventListener('input', function () { $('err').textContent = ''; });
+
+  /* ---------- 목표 ---------- */
+  function setGoal(g) {
+    g = Math.max(10, Math.min(300, g));
+    if (g === state.goal) return;
+    state.goal = g;
+    var newly = syncTodayBonus();
+    render();
+    toast('하루 목표를 ' + g + '분으로 바꿨어요', newly ? '오늘 목표 달성! 보너스 +' + BONUS + 'P' : '');
+  }
+  $('goalMinus').addEventListener('click', function () { setGoal(state.goal - 10); });
+  $('goalPlus').addEventListener('click', function () { setGoal(state.goal + 10); });
+
+  $('tabDay').addEventListener('click', function () { state.tab = 'day'; render(); });
+  $('tabType').addEventListener('click', function () { state.tab = 'type'; render(); });
+
+  /* ---------- 위임 클릭 ---------- */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('button');
+    if (!el) return;
+    var d = el.dataset;
+    if (d.type) { state.type = d.type; render(); renderTimer(); }
+    else if (d.quick) { $('err').textContent = ''; addRecord(+d.quick); }
+    else if (d.goal) { setGoal(+d.goal); }
+    else if (d.day) { state.selDay = d.day; render(); }
+    else if (d.del) {
+      var id = +d.del, rec = null;
+      state.records = state.records.filter(function (r) { if (r.id === id) { rec = r; return false; } return true; });
+      if (!rec) return;
+      var tk = todayKey(), lost = false;
+      if (rec.day === tk) { var had = !!state.bonus[tk]; syncTodayBonus(); lost = had && !state.bonus[tk]; }
+      else if (!totalsByDay()[rec.day]) delete state.bonus[rec.day];
+      render();
+      toast('기록을 삭제했어요', '-' + (rec.min * PT_PER_MIN + (lost ? BONUS : 0)) + 'P' + (lost ? ' (달성 보너스 포함)' : ''));
+    }
+    else if (el.id === 'resetAsk') { state.confirmReset = true; renderList(); }
+    else if (el.id === 'resetNo') { state.confirmReset = false; renderList(); }
+    else if (el.id === 'resetYes') {
+      state.records = []; state.bonus = {}; state.confirmReset = false; state.selDay = todayKey();
+      render();
+      toast('모든 기록을 지웠어요', '새로운 마음으로 다시 시작해요!');
+    }
+  });
+
+  render();
+  renderTimer();
+})();
+</script>
+</body>
+</html>

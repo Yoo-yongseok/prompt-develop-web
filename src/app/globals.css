@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-pretendard), "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --color-sky: var(--sky);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Prompt Lab 색 체계
+ * - 바탕은 흰색과 아주 옅은 회색. 포인트는 코발트 블루 한 가지이며 버튼과 강조에만 쓴다.
+ * - 짙은 네이비 구역(.dark)은 페이지당 1~2곳만 쓴다.
+ * - 그라데이션, 글로우, 블러 장식은 쓰지 않는다.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #0e1730;
+  --card: #f3f5f9;
+  --card-foreground: #0e1730;
+  --popover: #ffffff;
+  --popover-foreground: #0e1730;
+  --primary: #2450f0;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f5f9;
+  --secondary-foreground: #0e1730;
+  --muted: #f3f5f9;
+  --muted-foreground: #566076;
+  --accent: #e9eefe;
+  --accent-foreground: #0e1730;
+  --destructive: #cf2a37;
+  --border: #dfe3ec;
+  --input: #c6cddb;
+  --ring: #2450f0;
+  --sky: #2450f0;
+  --chart-1: #2450f0;
+  --chart-2: #0e1730;
+  --chart-3: #566076;
+  --chart-4: #c6cddb;
+  --chart-5: #f3f5f9;
+  --radius: 0.75rem;
+  --sidebar: #f3f5f9;
+  --sidebar-foreground: #0e1730;
+  --sidebar-primary: #2450f0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e9eefe;
+  --sidebar-accent-foreground: #0e1730;
+  --sidebar-border: #dfe3ec;
+  --sidebar-ring: #2450f0;
+}
+
+.dark {
+  --background: #0e1730;
+  --foreground: #f1f3fa;
+  --card: #18234a;
+  --card-foreground: #f1f3fa;
+  --popover: #18234a;
+  --popover-foreground: #f1f3fa;
+  --primary: #8ea6ff;
+  --primary-foreground: #0e1730;
+  --secondary: #18234a;
+  --secondary-foreground: #f1f3fa;
+  --muted: #18234a;
+  --muted-foreground: #a7b1cc;
+  --accent: #223063;
+  --accent-foreground: #f1f3fa;
+  --destructive: #ff8a96;
+  --border: #2b3966;
+  --input: #3a4a80;
+  --ring: #8ea6ff;
+  --sky: #a9bcff;
+  color: var(--foreground);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 25%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* 넓은 모니터에서 양옆이 비어 보이지 않도록 폭을 넉넉하게 잡는다 */
+  .wrap {
+    @apply mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-12;
+  }
+  .section {
+    @apply py-[72px] lg:py-[128px];
+  }
+  .h-hero {
+    @apply text-[2.375rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[3.5rem] lg:text-[4.5rem];
+  }
+  .h-page {
+    @apply text-[2.125rem] font-bold leading-[1.18] tracking-[-0.02em] sm:text-5xl lg:text-[3.5rem];
+  }
+  .h-section {
+    @apply text-[1.6875rem] font-bold leading-[1.22] tracking-[-0.015em] sm:text-4xl lg:text-[2.75rem];
+  }
+  .lead {
+    @apply text-[17px] leading-[1.7] text-muted-foreground lg:text-lg;
+  }
+  .btn-primary {
+    @apply inline-flex h-[52px] items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-primary-foreground transition-colors duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--primary) 86%, var(--foreground));
+  }
+  .btn-quiet {
+    @apply inline-flex h-[52px] items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 text-base font-semibold text-foreground transition-colors duration-150 hover:bg-card active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-sm {
+    @apply h-11 px-4 text-[15px];
+  }
+  .panel {
+    @apply rounded-[20px] bg-card;
+  }
+  .field {
+    @apply w-full resize-y rounded-[20px] border border-input bg-background p-5 text-[17px] leading-relaxed transition-colors duration-150 placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none;
+  }
+  .seg {
+    @apply flex gap-1 rounded-xl bg-card p-1;
+  }
+  .seg > button {
+    @apply rounded-lg px-4 py-2.5 text-[15px] font-semibold text-muted-foreground transition-colors duration-150;
+  }
+  .seg > button:hover {
+    @apply text-foreground;
+  }
+  .seg > button[aria-selected="true"] {
+    @apply bg-background text-foreground;
+    box-shadow: 0 1px 2px rgb(14 23 48 / 0.12);
+  }
+  .dark .seg > button[aria-selected="true"] {
+    @apply bg-primary text-primary-foreground;
+    box-shadow: none;
+  }
+}
