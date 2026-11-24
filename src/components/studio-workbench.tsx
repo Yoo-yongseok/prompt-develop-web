@@ -140,7 +140,6 @@ export function StudioWorkbench() {
       const result = await requestImprove(data.original.trim(), qa, code.trim(), aborter.current?.signal);
       setData((d) => ({ ...d, analysis: result, final: result.improvedPrompt }));
       setAnswers({});
-      setSlots({ before: { status: "idle" }, after: { status: "idle" } });
     } catch (e) {
       onAuthError(e);
       setImproveError(e instanceof Error ? e.message : "다시 시도해 주세요.");
@@ -229,7 +228,7 @@ export function StudioWorkbench() {
     const can = prompt.length >= 10 && !needCode;
     const changed = slot.status === "done" && slot.prompt !== prompt;
     let hint = "";
-    if (slot.status === "idle") hint = "대략 이런 앱이 나온다는 것을 보여 주는 시제품입니다.";
+    if (slot.status === "idle") hint = "AI는 프롬프트에 적힌 것만 만듭니다.";
     if (slot.status === "loading") hint = slot.chars === 0 ? "1분쯤 걸립니다." : `${slot.chars.toLocaleString("ko-KR")}자 작성 중`;
     if (changed) hint = "프롬프트가 바뀌었습니다. 다시 만들면 반영됩니다.";
 

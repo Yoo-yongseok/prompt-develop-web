@@ -1,6 +1,6 @@
 import "server-only";
-import { generationInstructions } from "@/content/levels";
 import { CODEGEN, describeError, getClient } from "./client";
+import { CODEGEN_SYSTEM } from "./codegen-prompt";
 import { STATUS_MARK, type GenerateStatus } from "./protocol";
 
 /**
@@ -9,7 +9,7 @@ import { STATUS_MARK, type GenerateStatus } from "./protocol";
  * 공정성: 이 함수는 받은 프롬프트가 학생의 원문인지 AI와 발전시킨 것인지 알지 못한다.
  * 모델, 시스템 프롬프트, 토큰 한도, effort는 모든 요청에 똑같이 적용된다.
  * 같은 이유로, 거절 시 다른 모델로 넘기는 fallback은 쓰지 않는다.
- * 시스템 프롬프트는 Learn의 Level 1~3 예시를 만들 때 쓴 지침과 같은 것이다.
+ * 시스템 프롬프트(codegen-prompt.ts)는 "적힌 것만 만든다"는 규칙이며 모든 요청에 똑같이 쓴다.
  */
 export function generateAppStream(prompt: string, signal?: AbortSignal): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -26,7 +26,7 @@ export function generateAppStream(prompt: string, signal?: AbortSignal): Readabl
           {
             model: CODEGEN.model,
             max_tokens: CODEGEN.maxTokens,
-            system: generationInstructions,
+            system: CODEGEN_SYSTEM,
             messages: [{ role: "user", content: prompt }],
             output_config: { effort: CODEGEN.effort },
           },

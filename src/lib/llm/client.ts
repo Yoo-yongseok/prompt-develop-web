@@ -16,7 +16,7 @@ export const IMPROVE_MODEL = process.env.PROMPTLAB_IMPROVE_MODEL ?? "claude-opus
 export const CODEGEN = {
   model: process.env.PROMPTLAB_CODEGEN_MODEL ?? "claude-opus-5-5",
   maxTokens: 32000,
-  // 완성품이 아니라 "대략 이렇게 나온다"를 보여 주는 시제품이므로 속도를 우선한다.
+  // 완성품이 아니라 비교용 시제품이므로 속도를 우선한다.
   effort: "low",
 } as const;
 
