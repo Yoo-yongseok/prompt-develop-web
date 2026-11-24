@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ElementExplorer } from "@/components/element-explorer";
 import { LevelCompare } from "@/components/level-compare";
 import { everydayUses, feedbackPairs } from "@/content/elements";
-import { generationInstructions, levelSteps } from "@/content/levels";
+import { levelSteps } from "@/content/levels";
+import { CODEGEN_SYSTEM } from "@/lib/llm/codegen-prompt";
 import { loadDemos } from "@/lib/demos";
 
 export const metadata: Metadata = { title: "배우기 — 프롬프트에 담을 다섯 가지" };
@@ -58,11 +59,11 @@ export default async function LearnPage() {
               이 비교는 공정한가요?
             </summary>
             <div className="mt-5 max-w-[80ch] space-y-4 leading-[1.75] text-muted-foreground">              <p>
-                같은 AI에 같은 지침을 주고 각각 따로 만들었습니다. 다른 것은 프롬프트뿐이고, 코드는 고치지
-                않았습니다. AI의 결과는 만들 때마다 달라지니 한 번으로 단정하지 마세요.
+                실험실과 같은 AI에 아래 지침을 똑같이 주고 각각 따로 만들었습니다. 다른 것은 프롬프트뿐이고, 코드는
+                고치지 않았습니다. AI의 결과는 만들 때마다 달라지니 한 번으로 단정하지 마세요.
               </p>
               <pre className="overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-[15px] text-foreground/85">
-                {generationInstructions}
+                {CODEGEN_SYSTEM}
               </pre>
             </div>
           </details>

@@ -2,751 +2,167 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>핏퀘스트 - 운동 기록</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>운동 기록</title>
 <style>
-  :root {
-    --bg: #000;
-    --panel: #0d0f0d;
-    --panel2: #151815;
-    --line: #232823;
-    --neon: #39ff14;
-    --neon-dim: rgba(57, 255, 20, .14);
-    --text: #f2f5f0;
-    --muted: #8b948a;
-    --danger: #ff5d5d;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--bg); color: var(--text); }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", sans-serif;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-  button, input, select { font: inherit; color: inherit; }
-  button { cursor: pointer; border: 0; background: none; }
-  :focus-visible { outline: 2px solid var(--neon); outline-offset: 2px; }
-  .num { font-variant-numeric: tabular-nums; }
-
-  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding: 0 16px 104px; }
-
-  header.top {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 0 14px;
-  }
-  .logo { font-size: 22px; font-weight: 900; font-style: italic; letter-spacing: -.5px; }
-  .logo span { color: var(--neon); }
-  .today-label { font-size: 13px; color: var(--muted); }
-
-  .screen { display: none; }
-  .screen.on { display: block; animation: rise .25s ease; }
-  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-
-  .card {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 18px; padding: 18px; margin-bottom: 14px;
-  }
-  .card h2 {
-    font-size: 13px; font-weight: 700; color: var(--muted);
-    letter-spacing: .5px; margin-bottom: 12px;
-  }
-
-  /* 홈: 오늘 카드 */
-  .hero { position: relative; overflow: hidden; border-color: #1f3a1a; }
-  .hero::before {
-    content: ""; position: absolute; right: -60px; top: -60px; width: 180px; height: 180px;
-    background: radial-gradient(circle, rgba(57,255,20,.22), transparent 70%);
-    pointer-events: none;
-  }
-  .hero-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-  .big { font-size: 58px; font-weight: 900; font-style: italic; line-height: 1; letter-spacing: -2px; }
-  .big small { font-size: 18px; font-style: normal; font-weight: 700; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
-  .rate { text-align: right; }
-  .rate b { display: block; font-size: 28px; font-weight: 900; font-style: italic; color: var(--neon); line-height: 1.1; }
-  .rate span { font-size: 12px; color: var(--muted); }
-
-  .bar { height: 12px; background: var(--panel2); border-radius: 99px; overflow: hidden; margin-top: 16px; }
-  .bar > i {
-    display: block; height: 100%; width: 0; border-radius: 99px;
-    background: linear-gradient(90deg, #1fae0a, var(--neon));
-    box-shadow: 0 0 12px rgba(57,255,20,.6);
-    transition: width .45s cubic-bezier(.2,.8,.2,1);
-  }
-  .bar.thin { height: 8px; margin-top: 10px; }
-  .bar-cap { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .bar-cap strong { color: var(--text); font-weight: 600; }
-
-  .cheer {
-    margin-top: 14px; font-size: 14px; font-weight: 600;
-    padding: 10px 12px; border-radius: 12px; background: var(--neon-dim); color: var(--neon);
-  }
-
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .grid2 .card { margin-bottom: 14px; }
-  .stat-val { font-size: 30px; font-weight: 900; font-style: italic; line-height: 1.1; }
-  .stat-val small { font-size: 13px; font-style: normal; font-weight: 600; color: var(--muted); margin-left: 3px; }
-  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .lv { color: var(--neon); }
-
-  /* 차트 */
-  .chart { position: relative; height: 170px; display: flex; align-items: flex-end; gap: 8px; padding-top: 22px; }
-  .col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; }
-  .col .v { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-  .col .b {
-    width: 100%; max-width: 34px; min-height: 3px; border-radius: 8px 8px 3px 3px;
-    background: #2a302a; transition: height .45s cubic-bezier(.2,.8,.2,1), background .2s;
-  }
-  .col.hit .b { background: var(--neon); box-shadow: 0 0 10px rgba(57,255,20,.45); }
-  .col.hit .v { color: var(--neon); font-weight: 700; }
-  .col.some .b { background: #1f7a10; }
-  .goal-line {
-    position: absolute; left: 0; right: 0; height: 0;
-    border-top: 1px dashed rgba(255,255,255,.35); pointer-events: none;
-    transition: bottom .45s cubic-bezier(.2,.8,.2,1);
-  }
-  .goal-line span {
-    position: absolute; right: 0; top: -18px; font-size: 10px; color: var(--muted);
-    background: var(--panel); padding: 0 4px;
-  }
-  .xaxis { display: flex; gap: 8px; margin-top: 8px; }
-  .xaxis div { flex: 1; text-align: center; font-size: 11px; color: var(--muted); line-height: 1.3; }
-  .xaxis div.now { color: var(--neon); font-weight: 700; }
-  .legend { display: flex; gap: 14px; font-size: 11px; color: var(--muted); margin-top: 12px; flex-wrap: wrap; }
-  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-
-  /* 폼 */
-  label.f { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
-  label.f:first-of-type { margin-top: 0; }
-  input[type=number], input[type=date], select {
-    width: 100%; height: 48px; padding: 0 14px;
-    background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
-    font-size: 16px; color-scheme: dark; appearance: none; -webkit-appearance: none;
-  }
-  input:focus, select:focus { border-color: var(--neon); outline: none; box-shadow: 0 0 0 3px var(--neon-dim); }
-  input.bad { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255,93,93,.15); }
-  .types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .types button {
-    height: 44px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--line);
-    font-size: 14px; font-weight: 600; color: var(--muted); transition: all .15s;
-  }
-  .types button[aria-pressed=true] { background: var(--neon-dim); border-color: var(--neon); color: var(--neon); }
-  .chips { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  .chips button {
-    padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line);
-    font-size: 13px; color: var(--muted); background: var(--panel2);
-  }
-  .chips button:active { border-color: var(--neon); color: var(--neon); }
-  .err { min-height: 20px; font-size: 13px; color: var(--danger); margin-top: 6px; }
-  .btn {
-    width: 100%; height: 52px; border-radius: 14px; margin-top: 6px;
-    background: var(--neon); color: #031a00; font-size: 16px; font-weight: 800;
-    transition: transform .1s, box-shadow .2s;
-    box-shadow: 0 0 18px rgba(57,255,20,.3);
-  }
-  .btn:active { transform: scale(.98); }
-  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); box-shadow: none; margin-top: 8px; }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
-
-  .editing-tag {
-    display: none; font-size: 12px; font-weight: 700; color: var(--neon);
-    background: var(--neon-dim); padding: 4px 10px; border-radius: 99px; margin-bottom: 12px;
-  }
-  .editing .editing-tag { display: inline-block; }
-  .card.editing { border-color: var(--neon); }
-
-  /* 기록 목록 */
-  .sum { display: flex; gap: 10px; margin-bottom: 4px; }
-  .sum div { flex: 1; background: var(--panel2); border-radius: 12px; padding: 10px 12px; }
-  .sum span { display: block; font-size: 11px; color: var(--muted); }
-  .sum b { font-size: 18px; font-weight: 800; font-style: italic; }
-  .day { font-size: 12px; font-weight: 700; color: var(--muted); margin: 16px 0 8px; display: flex; justify-content: space-between; }
-  .day em { font-style: normal; color: var(--neon); }
-  .rec {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    background: var(--panel2); border: 1px solid var(--line); border-radius: 14px;
-    padding: 12px; margin-bottom: 8px;
-  }
-  .rec.sel { border-color: var(--neon); }
-  .rec .ico {
-    width: 40px; height: 40px; border-radius: 12px; flex: none;
-    display: grid; place-items: center; font-size: 13px; font-weight: 800;
-    background: var(--neon-dim); color: var(--neon);
-  }
-  .rec .info { flex: 1; min-width: 0; }
-  .rec .info b { display: block; font-size: 15px; }
-  .rec .info span { font-size: 12px; color: var(--muted); }
-  .rec .acts { display: flex; gap: 6px; }
-  .sm {
-    height: 34px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 600;
-    border: 1px solid var(--line); background: var(--panel);
-  }
-  .sm.del { color: var(--danger); }
-  .sm.yes { background: var(--danger); border-color: var(--danger); color: #1a0000; }
-  .ask { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; padding-top: 4px; }
-  .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 28px 0 12px; }
-
-  /* 목표 */
-  .stepper { display: flex; align-items: center; gap: 10px; }
-  .stepper button {
-    width: 52px; height: 52px; flex: none; border-radius: 14px; font-size: 24px; font-weight: 700;
-    background: var(--panel2); border: 1px solid var(--line); color: var(--neon);
-  }
-  .stepper input { text-align: center; font-size: 24px; font-weight: 900; font-style: italic; height: 52px; }
-  .ok { min-height: 20px; font-size: 13px; color: var(--neon); margin-top: 6px; }
-  .rules { list-style: none; font-size: 14px; }
-  .rules li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
-  .rules li:last-child { border: 0; }
-  .rules span { color: var(--muted); }
-  .rules b { font-weight: 700; }
-
-  /* 하단 탭 */
-  nav.tabs {
-    position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
-    width: 100%; max-width: 480px; display: flex;
-    background: rgba(8,10,8,.94); border-top: 1px solid var(--line);
-    padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  }
-  nav.tabs button {
-    flex: 1; height: 52px; border-radius: 14px; font-size: 12px; font-weight: 700; color: var(--muted);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  }
-  nav.tabs svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  nav.tabs button[aria-selected=true] { color: var(--neon); background: var(--neon-dim); }
-
-  /* 토스트 */
-  .toast {
-    position: fixed; left: 50%; bottom: 92px; transform: translate(-50%, 20px);
-    max-width: 440px; width: calc(100% - 32px);
-    background: #10160f; border: 1px solid var(--neon); color: var(--text);
-    padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; text-align: center;
-    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
-    box-shadow: 0 8px 30px rgba(0,0,0,.6), 0 0 18px rgba(57,255,20,.2);
-  }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#eee;font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;padding:16px;max-width:480px;margin:0 auto}
+h1{color:#39ff14;font-size:22px;font-weight:900;letter-spacing:1px;margin-bottom:16px;font-style:italic}
+h2{color:#39ff14;font-size:15px;font-weight:800;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+section{background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #39ff14;border-radius:10px;padding:14px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{text-align:center}
+.stat .v{font-size:22px;font-weight:900;color:#39ff14}
+.stat .l{font-size:11px;color:#999;margin-top:2px}
+.bar{height:12px;background:#1a1a1a;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;background:#39ff14;box-shadow:0 0 8px #39ff14;transition:width .3s}
+.sub{font-size:12px;color:#aaa;margin-top:6px}
+label{display:block;font-size:12px;color:#aaa;margin:8px 0 4px}
+input,select{width:100%;background:#000;border:1px solid #333;color:#fff;padding:10px;border-radius:6px;font-size:15px}
+input:focus,select:focus{outline:none;border-color:#39ff14}
+button{background:#39ff14;color:#000;border:none;padding:10px 14px;border-radius:6px;font-weight:800;font-size:14px;cursor:pointer}
+button.ghost{background:transparent;color:#39ff14;border:1px solid #39ff14}
+button.danger{background:transparent;color:#ff4d4d;border:1px solid #ff4d4d}
+.row{display:flex;gap:8px;margin-top:12px}
+.row button{flex:1}
+.msg{font-size:12px;color:#ff4d4d;margin-top:8px;min-height:14px}
+.chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:16px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.col .b{width:100%;background:#39ff14;border-radius:4px 4px 0 0;min-height:2px}
+.col .n{font-size:10px;color:#39ff14;margin-bottom:3px}
+.col .d{font-size:10px;color:#888;margin-top:4px}
+.item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1f1f1f;gap:8px}
+.item:last-child{border-bottom:none}
+.item .t{font-weight:700}
+.item .s{font-size:12px;color:#888}
+.item button{padding:6px 10px;font-size:12px}
+.pts{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="top">
-    <div class="logo">FIT<span>QUEST</span></div>
-    <div class="today-label" id="todayLabel"></div>
-  </header>
+<h1>⚡ 운동 습관 챌린지</h1>
 
-  <!-- 홈 -->
-  <section class="screen on" id="s-home">
-    <div class="card hero">
-      <h2>오늘의 운동 시간</h2>
-      <div class="hero-row">
-        <div class="big num"><span id="hToday">0</span><small>분</small></div>
-        <div class="rate"><b class="num" id="hRate">0%</b><span>목표 달성률</span></div>
-      </div>
-      <div class="bar" role="progressbar" aria-label="오늘 목표 달성률" aria-valuemin="0" aria-valuemax="100" id="hBarWrap"><i id="hBar"></i></div>
-      <div class="bar-cap"><span>목표 <strong class="num" id="hGoal">0분</strong></span><span id="hRemain"></span></div>
-      <div class="cheer" id="hCheer"></div>
-    </div>
-
-    <div class="grid2">
-      <div class="card">
-        <h2>현재 레벨</h2>
-        <div class="stat-val lv num">Lv.<span id="hLevel">1</span></div>
-        <div class="bar thin" role="progressbar" aria-label="다음 레벨까지 진행도" aria-valuemin="0" aria-valuemax="100" id="hLvWrap"><i id="hLvBar"></i></div>
-        <div class="stat-sub num" id="hLvSub"></div>
-      </div>
-      <div class="card">
-        <h2>누적 포인트</h2>
-        <div class="stat-val num"><span id="hPoints">0</span><small>P</small></div>
-        <div class="stat-sub num" id="hTotalSub"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>최근 7일 운동 시간</h2>
-      <div class="chart" id="chart"></div>
-      <div class="xaxis" id="xaxis"></div>
-      <div class="legend">
-        <span><i style="background:var(--neon)"></i>목표 달성</span>
-        <span><i style="background:#1f7a10"></i>목표 미달</span>
-        <span class="num" id="weekSum"></span>
-      </div>
-    </div>
-
-    <button class="btn" id="goAdd">+ 운동 기록하기</button>
-  </section>
-
-  <!-- 기록 -->
-  <section class="screen" id="s-log">
-    <div class="card" id="formCard">
-      <span class="editing-tag">기록 수정 중</span>
-      <h2 id="formTitle">운동 기록 추가</h2>
-      <form id="form" novalidate>
-        <label class="f" id="typeLbl">운동 종류</label>
-        <div class="types" id="types" role="group" aria-labelledby="typeLbl"></div>
-
-        <label class="f" for="fDate">날짜</label>
-        <input type="date" id="fDate" required>
-
-        <label class="f" for="fMin">운동 시간 (분)</label>
-        <input type="number" id="fMin" min="1" max="600" step="1" inputmode="numeric" placeholder="예: 30" aria-describedby="fErr">
-        <div class="chips" id="chips">
-          <button type="button" data-m="10">10분</button>
-          <button type="button" data-m="20">20분</button>
-          <button type="button" data-m="30">30분</button>
-          <button type="button" data-m="60">60분</button>
-        </div>
-        <div class="err" id="fErr" role="alert"></div>
-
-        <button type="submit" class="btn" id="fSubmit">기록 저장</button>
-        <button type="button" class="btn ghost" id="fCancel" hidden>수정 취소</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2>내 운동 기록</h2>
-      <div class="sum">
-        <div><span>총 운동 시간</span><b class="num" id="lTotal">0분</b></div>
-        <div><span>누적 포인트</span><b class="num" id="lPoints">0P</b></div>
-        <div><span>기록 수</span><b class="num" id="lCount">0개</b></div>
-      </div>
-      <div id="list"></div>
-    </div>
-  </section>
-
-  <!-- 목표 -->
-  <section class="screen" id="s-goal">
-    <div class="card">
-      <h2>하루 운동 목표 시간</h2>
-      <div class="stepper">
-        <button type="button" id="gMinus" aria-label="목표 5분 줄이기">−</button>
-        <input type="number" id="gInput" min="5" max="600" step="1" inputmode="numeric" aria-label="하루 목표 시간(분)">
-        <button type="button" id="gPlus" aria-label="목표 5분 늘리기">+</button>
-      </div>
-      <div class="err" id="gErr" role="alert"></div>
-      <button type="button" class="btn" id="gSave">목표 저장</button>
-      <div class="ok" id="gOk" role="status"></div>
-      <p class="hint">5분부터 600분까지 설정할 수 있어요. 처음엔 가볍게 시작해 조금씩 늘려보세요.</p>
-    </div>
-
-    <div class="card">
-      <h2>오늘의 달성 현황</h2>
-      <div class="bar-cap" style="margin-top:0"><span>운동 <strong class="num" id="gToday">0분</strong> / 목표 <strong class="num" id="gGoal">0분</strong></span><strong class="num lv" id="gRate">0%</strong></div>
-      <div class="bar" role="progressbar" aria-label="오늘 목표 달성률" aria-valuemin="0" aria-valuemax="100" id="gBarWrap"><i id="gBar"></i></div>
-    </div>
-
-    <div class="card">
-      <h2>보상 규칙</h2>
-      <ul class="rules">
-        <li><span>운동 10분마다</span><b>+10 포인트</b></li>
-        <li><span>누적 100 포인트마다</span><b>레벨 +1</b></li>
-        <li><span>내 포인트</span><b class="num" id="gPoints">0P</b></li>
-        <li><span>내 레벨</span><b class="num lv" id="gLevel">Lv.1</b></li>
-        <li><span>다음 레벨까지</span><b class="num" id="gNext">100P</b></li>
-      </ul>
-      <p class="hint">기록을 수정하거나 삭제하면 포인트와 레벨도 함께 다시 계산돼요.</p>
-    </div>
-  </section>
+<section>
+<h2>오늘</h2>
+<div class="stats">
+<div class="stat"><div class="v" id="todayMin">0</div><div class="l">오늘 운동(분)</div></div>
+<div class="stat"><div class="v" id="rate">0%</div><div class="l">목표 달성률</div></div>
+<div class="stat"><div class="v" id="level">1</div><div class="l">현재 레벨</div></div>
 </div>
+<div class="bar"><div id="goalBar" style="width:0%"></div></div>
+<div class="sub" id="goalText"></div>
+<div class="sub">총 운동 시간: <b id="totalMin" style="color:#39ff14">0</b>분</div>
+</section>
 
-<nav class="tabs" role="tablist" aria-label="화면 이동">
-  <button role="tab" data-s="home" aria-selected="true">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈
-  </button>
-  <button role="tab" data-s="log" aria-selected="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/></svg>기록
-  </button>
-  <button role="tab" data-s="goal" aria-selected="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>목표
-  </button>
-</nav>
+<section>
+<h2>목표 설정</h2>
+<label>하루 운동 목표 시간(분)</label>
+<input type="number" id="goalInput" min="1" step="1" value="30">
+<div class="row"><button id="goalBtn">목표 저장</button></div>
+<div class="msg" id="goalMsg"></div>
+</section>
 
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<section>
+<h2>보상</h2>
+<div class="pts"><span>누적 포인트: <b id="points" style="color:#39ff14">0</b>P</span><span>레벨 <b id="level2">1</b></span></div>
+<div class="bar"><div id="lvBar" style="width:0%"></div></div>
+<div class="sub" id="lvText"></div>
+</section>
+
+<section>
+<h2 id="formTitle">운동 기록하기</h2>
+<label>운동 종류</label>
+<input type="text" id="type" placeholder="예: 달리기">
+<label>날짜</label>
+<input type="date" id="date">
+<label>운동 시간(분)</label>
+<input type="number" id="min" min="1" step="1" placeholder="예: 30">
+<div class="row">
+<button id="saveBtn">기록 추가</button>
+<button class="ghost" id="cancelBtn" style="display:none">취소</button>
+</div>
+<div class="msg" id="formMsg"></div>
+</section>
+
+<section>
+<h2>최근 7일</h2>
+<div class="chart" id="chart"></div>
+</section>
+
+<section>
+<h2>운동 기록</h2>
+<div id="list"></div>
+</section>
 
 <script>
-(function () {
-  'use strict';
-  var $ = function (id) { return document.getElementById(id); };
-  var TYPES = ['달리기', '걷기', '자전거', '줄넘기', '농구', '축구', '수영', '홈트'];
-  var DOW = ['일', '월', '화', '수', '목', '금', '토'];
-  var MAX_MIN = 600;
+let records=[],goal=30,editId=null,nextId=1;
+const $=id=>document.getElementById(id);
+const fmt=d=>{const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())};
+const today=()=>fmt(new Date());
+$('date').value=today();
 
-  function ymd(d) {
-    var m = d.getMonth() + 1, day = d.getDate();
-    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
-  }
-  function daysAgo(n) { var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return d; }
-  function parse(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
-  var TODAY = ymd(daysAgo(0));
+function render(){
+  const t=today();
+  const todayMin=records.filter(r=>r.date===t).reduce((a,r)=>a+r.min,0);
+  const total=records.reduce((a,r)=>a+r.min,0);
+  const rate=Math.round(todayMin/goal*100);
+  $('todayMin').textContent=todayMin;
+  $('rate').textContent=rate+'%';
+  $('goalBar').style.width=Math.min(rate,100)+'%';
+  $('goalText').textContent=`${todayMin}분 / 목표 ${goal}분`;
+  $('totalMin').textContent=total;
+  const pts=Math.floor(total/10)*10;
+  const lv=Math.floor(pts/100)+1;
+  $('points').textContent=pts;
+  $('level').textContent=lv;$('level2').textContent=lv;
+  $('lvBar').style.width=(pts%100)+'%';
+  $('lvText').textContent=`다음 레벨까지 ${100-pts%100}P`;
+  // chart
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d)}
+  const vals=days.map(d=>records.filter(r=>r.date===fmt(d)).reduce((a,r)=>a+r.min,0));
+  const max=Math.max(...vals,1);
+  $('chart').innerHTML=days.map((d,i)=>`<div class="col"><div class="n">${vals[i]}</div><div class="b" style="height:${vals[i]/max*100}px"></div><div class="d">${d.getMonth()+1}/${d.getDate()}</div></div>`).join('');
+  // list
+  const sorted=[...records].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  $('list').innerHTML=sorted.map(r=>`<div class="item"><div><div class="t">${esc(r.type)}</div><div class="s">${r.date} · ${r.min}분</div></div><div style="display:flex;gap:6px"><button class="ghost" onclick="edit(${r.id})">수정</button><button class="danger" onclick="del(${r.id})">삭제</button></div></div>`).join('');
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-  // ----- 상태 (메모리에만 보관) -----
-  var seq = 1;
-  var state = {
-    goal: 40,
-    records: [],
-    editId: null,
-    askId: null,
-    type: TYPES[0]
-  };
-  // 가상의 테스트 데이터
-  [[6, '걷기', 20], [5, '줄넘기', 30], [4, '농구', 50], [2, '달리기', 25], [1, '자전거', 45], [0, '홈트', 20]]
-    .forEach(function (s) { state.records.push({ id: seq++, type: s[1], date: ymd(daysAgo(s[0])), min: s[2] }); });
+$('goalBtn').onclick=()=>{
+  const v=$('goalInput').value.trim();
+  if(!/^\d+$/.test(v)||+v<=0){$('goalMsg').textContent='1분 이상의 정수로 입력해 주세요.';return}
+  goal=+v;$('goalMsg').textContent='';render();
+};
 
-  // ----- 계산 -----
-  function minutesOn(date) {
-    return state.records.reduce(function (a, r) { return a + (r.date === date ? r.min : 0); }, 0);
-  }
-  function stats() {
-    var total = state.records.reduce(function (a, r) { return a + r.min; }, 0);
-    var points = Math.floor(total / 10) * 10;
-    var today = minutesOn(TODAY);
-    return {
-      total: total,
-      points: points,
-      level: Math.floor(points / 100) + 1,
-      inLevel: points % 100,
-      today: today,
-      rate: Math.round(today / state.goal * 100)
-    };
-  }
-  function hm(min) {
-    if (min < 60) return min + '분';
-    var h = Math.floor(min / 60), m = min % 60;
-    return h + '시간' + (m ? ' ' + m + '분' : '');
-  }
-
-  // ----- 토스트 -----
-  var toastTimer;
-  function toast(msg) {
-    var t = $('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
-  }
-
-  // ----- 렌더 -----
-  function setBar(wrap, bar, pct) {
-    var c = Math.max(0, Math.min(100, pct));
-    $(bar).style.width = c + '%';
-    $(wrap).setAttribute('aria-valuenow', c);
-  }
-
-  function render() {
-    var s = stats();
-
-    // 홈
-    $('hToday').textContent = s.today;
-    $('hRate').textContent = s.rate + '%';
-    $('hGoal').textContent = state.goal + '분';
-    setBar('hBarWrap', 'hBar', s.rate);
-    var remain = state.goal - s.today;
-    $('hRemain').textContent = remain > 0 ? remain + '분 남음' : '목표 달성!';
-    $('hCheer').textContent =
-      s.today === 0 ? '오늘의 첫 운동을 기록해볼까요? 10분만 해도 포인트가 쌓여요.' :
-      remain > 0 ? '좋아요! ' + remain + '분만 더 하면 오늘 목표 달성이에요.' :
-      '오늘 목표 달성! 이 흐름 그대로 내일도 가봐요.';
-    $('hLevel').textContent = s.level;
-    setBar('hLvWrap', 'hLvBar', s.inLevel);
-    $('hLvSub').textContent = '다음 레벨까지 ' + (100 - s.inLevel) + 'P';
-    $('hPoints').textContent = s.points.toLocaleString('ko-KR');
-    $('hTotalSub').textContent = '총 운동 ' + hm(s.total);
-
-    renderChart();
-
-    // 기록
-    $('lTotal').textContent = hm(s.total);
-    $('lPoints').textContent = s.points.toLocaleString('ko-KR') + 'P';
-    $('lCount').textContent = state.records.length + '개';
-    renderList();
-
-    // 목표
-    $('gToday').textContent = s.today + '분';
-    $('gGoal').textContent = state.goal + '분';
-    $('gRate').textContent = s.rate + '%';
-    setBar('gBarWrap', 'gBar', s.rate);
-    $('gPoints').textContent = s.points.toLocaleString('ko-KR') + 'P';
-    $('gLevel').textContent = 'Lv.' + s.level;
-    $('gNext').textContent = (100 - s.inLevel) + 'P';
-  }
-
-  function renderChart() {
-    var days = [], max = state.goal, sum = 0, i;
-    for (i = 6; i >= 0; i--) {
-      var d = daysAgo(i), key = ymd(d), m = minutesOn(key);
-      days.push({ d: d, key: key, m: m });
-      if (m > max) max = m;
-      sum += m;
-    }
-    var chart = $('chart'), x = $('xaxis');
-    var plot = 148; // 막대 영역 높이(px)
-    var html = '', xh = '';
-    days.forEach(function (o) {
-      var h = Math.round(o.m / max * (plot - 20));
-      var cls = o.m >= state.goal ? 'hit' : (o.m > 0 ? 'some' : '');
-      html += '<div class="col ' + cls + '" title="' + (o.d.getMonth() + 1) + '월 ' + o.d.getDate() + '일 ' + o.m + '분">' +
-        '<div class="v num">' + (o.m || '') + '</div><div class="b" style="height:' + h + 'px"></div></div>';
-      xh += '<div class="' + (o.key === TODAY ? 'now' : '') + '">' + (o.key === TODAY ? '오늘' : DOW[o.d.getDay()]) +
-        '<br><span class="num">' + o.d.getDate() + '</span></div>';
-    });
-    var gl = Math.round(state.goal / max * (plot - 20));
-    html += '<div class="goal-line" style="bottom:' + gl + 'px"><span class="num">목표 ' + state.goal + '분</span></div>';
-    chart.innerHTML = html;
-    chart.setAttribute('role', 'img');
-    chart.setAttribute('aria-label', '최근 7일 운동 시간: ' + days.map(function (o) {
-      return (o.d.getMonth() + 1) + '월 ' + o.d.getDate() + '일 ' + o.m + '분';
-    }).join(', '));
-    x.innerHTML = xh;
-    $('weekSum').textContent = '7일 합계 ' + hm(sum);
-  }
-
-  function renderList() {
-    var list = $('list');
-    if (!state.records.length) {
-      list.innerHTML = '<div class="empty">아직 기록이 없어요.<br>위에서 첫 운동을 기록해보세요.</div>';
-      return;
-    }
-    var recs = state.records.slice().sort(function (a, b) {
-      return a.date === b.date ? b.id - a.id : (a.date < b.date ? 1 : -1);
-    });
-    var html = '', cur = '';
-    recs.forEach(function (r) {
-      if (r.date !== cur) {
-        cur = r.date;
-        var d = parse(r.date);
-        var label = r.date === TODAY ? '오늘' : (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DOW[d.getDay()] + ')';
-        html += '<div class="day"><span>' + label + '</span><em class="num">' + minutesOn(r.date) + '분</em></div>';
-      }
-      html += '<div class="rec' + (state.editId === r.id ? ' sel' : '') + '">' +
-        '<div class="ico">' + r.type.charAt(0) + '</div>' +
-        '<div class="info"><b>' + r.type + '</b><span class="num">' + r.min + '분</span></div>';
-      if (state.askId === r.id) {
-        html += '<div class="ask"><span>이 기록을 삭제할까요?</span><div class="acts">' +
-          '<button class="sm" data-act="no" data-id="' + r.id + '">취소</button>' +
-          '<button class="sm yes" data-act="yes" data-id="' + r.id + '">삭제</button></div></div>';
-      } else {
-        html += '<div class="acts">' +
-          '<button class="sm" data-act="edit" data-id="' + r.id + '">수정</button>' +
-          '<button class="sm del" data-act="del" data-id="' + r.id + '">삭제</button></div>';
-      }
-      html += '</div>';
-    });
-    list.innerHTML = html;
-  }
-
-  function renderTypes() {
-    $('types').innerHTML = TYPES.map(function (t) {
-      return '<button type="button" data-t="' + t + '" aria-pressed="' + (t === state.type) + '">' + t + '</button>';
-    }).join('');
-  }
-
-  // ----- 화면 전환 -----
-  function show(name) {
-    ['home', 'log', 'goal'].forEach(function (n) {
-      $('s-' + n).classList.toggle('on', n === name);
-    });
-    Array.prototype.forEach.call(document.querySelectorAll('nav.tabs button'), function (b) {
-      b.setAttribute('aria-selected', b.getAttribute('data-s') === name);
-    });
-    window.scrollTo(0, 0);
-  }
-  document.querySelector('nav.tabs').addEventListener('click', function (e) {
-    var b = e.target.closest('button');
-    if (b) show(b.getAttribute('data-s'));
-  });
-  $('goAdd').addEventListener('click', function () { show('log'); $('fMin').focus(); });
-
-  // ----- 검증 -----
-  // 숫자만으로 이루어진 양의 정수인지 확인 (음수, 소수, 문자 차단)
-  function checkMinutes(raw, lo, hi, what) {
-    var v = String(raw).trim();
-    if (v === '') return { err: what + '을 입력해 주세요.' };
-    if (!/^\d+$/.test(v)) return { err: '음수·소수·문자는 입력할 수 없어요. 숫자만 입력해 주세요.' };
-    var n = parseInt(v, 10);
-    if (n < lo) return { err: lo + '분 이상으로 입력해 주세요.' };
-    if (n > hi) return { err: hi + '분 이하로 입력해 주세요.' };
-    return { val: n };
-  }
-  // 입력 단계에서 '-', '+', 'e', '.' 차단
-  function blockKeys(e) {
-    if (['-', '+', 'e', 'E', '.', ','].indexOf(e.key) > -1) e.preventDefault();
-  }
-  $('fMin').addEventListener('keydown', blockKeys);
-  $('gInput').addEventListener('keydown', blockKeys);
-
-  // ----- 기록 폼 -----
-  function resetForm() {
-    state.editId = null;
-    state.type = TYPES[0];
-    renderTypes();
-    $('fDate').value = TODAY;
-    $('fMin').value = '';
-    $('fMin').classList.remove('bad');
-    $('fDate').classList.remove('bad');
-    $('fErr').textContent = '';
-    $('formCard').classList.remove('editing');
-    $('formTitle').textContent = '운동 기록 추가';
-    $('fSubmit').textContent = '기록 저장';
-    $('fCancel').hidden = true;
-  }
-
-  $('types').addEventListener('click', function (e) {
-    var b = e.target.closest('button');
-    if (!b) return;
-    state.type = b.getAttribute('data-t');
-    renderTypes();
-  });
-  $('chips').addEventListener('click', function (e) {
-    var b = e.target.closest('button');
-    if (!b) return;
-    $('fMin').value = b.getAttribute('data-m');
-    $('fMin').classList.remove('bad');
-    $('fErr').textContent = '';
-  });
-  $('fMin').addEventListener('input', function () {
-    $('fMin').classList.remove('bad');
-    $('fErr').textContent = '';
-  });
-
-  $('form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var date = $('fDate').value, minEl = $('fMin');
-    $('fDate').classList.remove('bad');
-    minEl.classList.remove('bad');
-
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      $('fDate').classList.add('bad');
-      $('fErr').textContent = '날짜를 선택해 주세요.';
-      return;
-    }
-    if (date > TODAY) {
-      $('fDate').classList.add('bad');
-      $('fErr').textContent = '미래 날짜는 기록할 수 없어요.';
-      return;
-    }
-    // type=number 입력이 숫자가 아니면 value가 빈 문자열이 되므로 validity도 함께 확인
-    var res = minEl.validity && minEl.validity.badInput
-      ? { err: '숫자만 입력해 주세요.' }
-      : checkMinutes(minEl.value, 1, MAX_MIN, '운동 시간');
-    if (res.err) {
-      minEl.classList.add('bad');
-      $('fErr').textContent = res.err;
-      minEl.focus();
-      return;
-    }
-
-    var before = stats();
-    if (state.editId !== null) {
-      var r = state.records.filter(function (x) { return x.id === state.editId; })[0];
-      if (r) { r.type = state.type; r.date = date; r.min = res.val; }
-      resetForm();
-      render();
-      announce(before, '기록을 수정했어요.');
-    } else {
-      state.records.push({ id: seq++, type: state.type, date: date, min: res.val });
-      var keepType = state.type;
-      resetForm();
-      state.type = keepType;
-      renderTypes();
-      render();
-      announce(before, '기록을 저장했어요.');
-    }
-  });
-
-  function announce(before, base) {
-    var after = stats(), diff = after.points - before.points, msg = base;
-    if (diff !== 0) msg += ' ' + (diff > 0 ? '+' : '') + diff + 'P';
-    if (after.level > before.level) msg = '레벨 업! Lv.' + after.level + ' 달성 (' + (diff > 0 ? '+' : '') + diff + 'P)';
-    else if (after.level < before.level) msg += ' · Lv.' + after.level + '로 변경';
-    toast(msg);
-  }
-
-  $('fCancel').addEventListener('click', function () {
-    resetForm();
-    renderList();
-    toast('수정을 취소했어요.');
-  });
-
-  // ----- 기록 목록: 수정 / 삭제 -----
-  $('list').addEventListener('click', function (e) {
-    var b = e.target.closest('button');
-    if (!b) return;
-    var id = +b.getAttribute('data-id'), act = b.getAttribute('data-act');
-    var r = state.records.filter(function (x) { return x.id === id; })[0];
-    if (!r) return;
-
-    if (act === 'edit') {
-      state.editId = id;
-      state.askId = null;
-      state.type = r.type;
-      renderTypes();
-      $('fDate').value = r.date;
-      $('fMin').value = r.min;
-      $('fErr').textContent = '';
-      $('fMin').classList.remove('bad');
-      $('formCard').classList.add('editing');
-      $('formTitle').textContent = '운동 기록 수정';
-      $('fSubmit').textContent = '수정 완료';
-      $('fCancel').hidden = false;
-      renderList();
-      $('formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      $('fMin').focus({ preventScroll: true });
-    } else if (act === 'del') {
-      state.askId = id;
-      renderList();
-    } else if (act === 'no') {
-      state.askId = null;
-      renderList();
-    } else if (act === 'yes') {
-      var before = stats();
-      state.records = state.records.filter(function (x) { return x.id !== id; });
-      state.askId = null;
-      if (state.editId === id) resetForm();
-      render();
-      announce(before, '기록을 삭제했어요.');
-    }
-  });
-
-  // ----- 목표 설정 -----
-  function goalMsg(err, ok) {
-    $('gErr').textContent = err || '';
-    $('gOk').textContent = ok || '';
-    $('gInput').classList.toggle('bad', !!err);
-  }
-  function stepGoal(delta) {
-    var cur = parseInt($('gInput').value, 10);
-    if (isNaN(cur)) cur = state.goal;
-    $('gInput').value = Math.max(5, Math.min(MAX_MIN, cur + delta));
-    goalMsg();
-  }
-  $('gMinus').addEventListener('click', function () { stepGoal(-5); });
-  $('gPlus').addEventListener('click', function () { stepGoal(5); });
-  $('gInput').addEventListener('input', function () { goalMsg(); });
-  $('gSave').addEventListener('click', function () {
-    var el = $('gInput');
-    var res = el.validity && el.validity.badInput
-      ? { err: '숫자만 입력해 주세요.' }
-      : checkMinutes(el.value, 5, MAX_MIN, '목표 시간');
-    if (res.err) { goalMsg(res.err); el.focus(); return; }
-    state.goal = res.val;
-    el.value = res.val;
-    render();
-    goalMsg('', '하루 목표를 ' + res.val + '분으로 저장했어요.');
-    toast('하루 목표: ' + res.val + '분');
-  });
-  $('gInput').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); $('gSave').click(); }
-  });
-
-  // ----- 시작 -----
-  (function init() {
-    var d = daysAgo(0);
-    $('todayLabel').textContent = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + DOW[d.getDay()] + '요일';
-    $('fDate').max = TODAY;
-    $('gInput').value = state.goal;
-    resetForm();
-    render();
-  })();
-})();
+$('saveBtn').onclick=()=>{
+  const type=$('type').value.trim(),date=$('date').value,mv=$('min').value.trim();
+  if(!type){$('formMsg').textContent='운동 종류를 입력해 주세요.';return}
+  if(!date){$('formMsg').textContent='날짜를 선택해 주세요.';return}
+  if(!/^\d+$/.test(mv)||+mv<=0||+mv>1440){$('formMsg').textContent='운동 시간은 1~1440분 사이의 정수로 입력해 주세요.';return}
+  if(editId!==null){Object.assign(records.find(r=>r.id===editId),{type,date,min:+mv})}
+  else records.push({id:nextId++,type,date,min:+mv});
+  resetForm();render();
+};
+function resetForm(){
+  editId=null;$('type').value='';$('min').value='';$('date').value=today();
+  $('formMsg').textContent='';$('saveBtn').textContent='기록 추가';
+  $('formTitle').textContent='운동 기록하기';$('cancelBtn').style.display='none';
+}
+$('cancelBtn').onclick=resetForm;
+function edit(id){
+  const r=records.find(x=>x.id===id);editId=id;
+  $('type').value=r.type;$('date').value=r.date;$('min').value=r.min;
+  $('saveBtn').textContent='수정 저장';$('formTitle').textContent='기록 수정';
+  $('cancelBtn').style.display='block';$('formMsg').textContent='';
+  $('type').scrollIntoView({block:'center'});
+}
+function del(id){
+  records=records.filter(r=>r.id!==id);
+  if(editId===id)resetForm();
+  render();
+}
+render();
 </script>
 </body>
 </html>

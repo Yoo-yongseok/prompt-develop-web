@@ -22,7 +22,7 @@ npm run build   # 배포 전 확인
 콘텐츠는 `src/content/`에 있고 코드 수정 없이 글만 고칠 수 있다.
 
 - `making-of.ts` — 제작 과정 기록. 실제 있었던 일만 적는다.
-- `demos/level-{1,2,3}.html` — Level 비교용 미니 앱. 같은 모델, 같은 지침(`levels.ts`의 `generationInstructions`)으로 각각 따로 생성했고 손으로 고치지 않았다. 다시 만들 때도 같은 조건을 지킨다.
+- `demos/level-{1,2,3}.html` — Level 비교용 미니 앱. 실험실과 같은 `/api/generate`(같은 모델, 같은 시스템 프롬프트 `src/lib/llm/codegen-prompt.ts`, 같은 설정)로 `levels.ts`의 세 프롬프트를 각각 보내 만들었고 손으로 고치지 않았다. 다시 만들 때도 같은 조건을 지킨다.
 
 ## 디자인 원칙
 
