@@ -5,212 +5,152 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>운동 습관 기록</title>
 <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: #000;
-    color: #e8ffe8;
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  }
-  .wrap { max-width: 420px; margin: 0 auto; padding: 20px 16px 40px; }
-  h1 {
-    color: #22e06b;
-    font-size: 24px;
-    margin: 0 0 20px;
-    letter-spacing: 1px;
-  }
-  section {
-    border: 1px solid #1f6b3a;
-    background: #0a0f0b;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  h2 { font-size: 16px; color: #22e06b; margin: 0 0 12px; }
-  label { display: block; font-size: 14px; margin-bottom: 6px; color: #b8e8c6; }
-  input {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    background: #000;
-    color: #e8ffe8;
-    border: 1px solid #22e06b;
-    border-radius: 6px;
-    margin-bottom: 10px;
-  }
-  button {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    background: #22e06b;
-    color: #000;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  button:active { background: #1bb556; }
-  .msg { font-size: 14px; color: #22e06b; min-height: 18px; margin-top: 8px; }
-  .big { font-size: 28px; font-weight: bold; color: #22e06b; }
-  .progress {
-    height: 14px;
-    background: #102a18;
-    border-radius: 7px;
-    overflow: hidden;
-    margin: 10px 0 6px;
-  }
-  .progress > div { height: 100%; background: #22e06b; width: 0; }
-  .row { display: flex; justify-content: space-between; font-size: 14px; }
-  .chart {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    height: 160px;
-    border-bottom: 1px solid #1f6b3a;
-    padding-top: 10px;
-    overflow-x: auto;
-  }
-  .bar-col {
-    flex: 0 0 36px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
-  }
-  .bar { width: 24px; background: #22e06b; border-radius: 3px 3px 0 0; }
-  .bar-val { font-size: 11px; color: #b8e8c6; margin-bottom: 3px; }
-  .labels { display: flex; gap: 8px; overflow-x: auto; }
-  .labels span { flex: 0 0 36px; text-align: center; font-size: 11px; color: #7fbf94; padding-top: 4px; }
-  ul { list-style: none; padding: 0; margin: 0; }
-  li { padding: 8px 0; border-bottom: 1px solid #143d22; font-size: 14px; display: flex; justify-content: space-between; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0b0b;color:#e8f5e9;font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16px;line-height:1.5}
+.wrap{max-width:420px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:24px;color:#22e06b;letter-spacing:-0.5px;margin-bottom:4px}
+.sub{color:#8fa892;font-size:14px;margin-bottom:20px}
+.card{background:#151815;border:1px solid #1f3a26;border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{font-size:17px;margin-bottom:12px;color:#c8f7d4}
+label{display:block;font-size:14px;color:#8fa892;margin-bottom:6px}
+input{width:100%;height:48px;background:#0b0b0b;border:1px solid #2a4a32;border-radius:10px;color:#fff;font-size:16px;padding:0 14px;margin-bottom:12px}
+input:focus{outline:none;border-color:#22e06b}
+button{width:100%;height:50px;background:#22e06b;color:#0b0b0b;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer}
+button:active{background:#1bb556}
+.row{display:flex;gap:10px}
+.row>div{flex:1}
+.msg{font-size:14px;min-height:20px;margin-top:8px;color:#22e06b}
+.msg.err{color:#ff7a7a}
+.stats{display:flex;gap:10px;margin-bottom:16px}
+.stat{flex:1;background:#151815;border:1px solid #1f3a26;border-radius:14px;padding:14px;text-align:center}
+.stat .v{font-size:22px;font-weight:800;color:#22e06b}
+.stat .k{font-size:13px;color:#8fa892}
+.bar{height:12px;background:#0b0b0b;border-radius:6px;overflow:hidden;border:1px solid #2a4a32}
+.bar i{display:block;height:100%;background:#22e06b;width:0;transition:width .3s}
+.ptxt{font-size:14px;color:#8fa892;margin-top:8px}
+canvas{width:100%;height:200px;display:block}
+ul{list-style:none}
+li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #1f2a21;font-size:15px}
+li:last-child{border-bottom:none}
+li .pt{color:#22e06b;font-weight:700}
+.empty{color:#6c806f;font-size:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>운동 습관 기록</h1>
+<h1>운동 습관 기록</h1>
+<p class="sub">매일 조금씩, 꾸준히 운동해요</p>
 
-  <section>
-    <h2>하루 운동 목표</h2>
-    <label for="goal">목표 시간 (분)</label>
-    <input id="goal" type="number" min="1">
-    <button id="goalBtn">목표 설정</button>
-    <div class="msg" id="goalMsg"></div>
-  </section>
+<div class="stats">
+<div class="stat"><div class="v" id="sToday">0분</div><div class="k">오늘 운동</div></div>
+<div class="stat"><div class="v" id="sPoint">0P</div><div class="k">내 포인트</div></div>
+</div>
 
-  <section>
-    <h2>운동 시간 기록</h2>
-    <label for="date">날짜</label>
-    <input id="date" type="date">
-    <label for="minutes">운동 시간 (분)</label>
-    <input id="minutes" type="number" min="1">
-    <button id="addBtn">기록하기</button>
-    <div class="msg" id="addMsg"></div>
-  </section>
+<div class="card">
+<h2>하루 운동 목표</h2>
+<label for="goal">목표 시간 (분)</label>
+<input id="goal" type="number" min="1" inputmode="numeric" placeholder="예: 30">
+<button id="goalBtn">목표 설정</button>
+<div class="msg" id="goalMsg"></div>
+<div style="margin-top:12px" class="bar"><i id="bar"></i></div>
+<div class="ptxt" id="progTxt">목표를 설정해 주세요.</div>
+</div>
 
-  <section>
-    <h2>오늘의 진행</h2>
-    <div class="row"><span>오늘 운동</span><span id="todayText">0분</span></div>
-    <div class="progress"><div id="bar"></div></div>
-    <div class="row"><span>목표</span><span id="goalText">-</span></div>
-  </section>
+<div class="card">
+<h2>운동 기록하기</h2>
+<div class="row">
+<div><label for="kind">운동 내용</label><input id="kind" type="text" placeholder="예: 달리기"></div>
+<div><label for="min">시간 (분)</label><input id="min" type="number" min="1" inputmode="numeric" placeholder="예: 20"></div>
+</div>
+<button id="addBtn">기록하기</button>
+<div class="msg" id="addMsg"></div>
+</div>
 
-  <section>
-    <h2>포인트</h2>
-    <div class="big" id="points">0 P</div>
-  </section>
+<div class="card">
+<h2>최근 7일 운동 그래프</h2>
+<canvas id="chart"></canvas>
+</div>
 
-  <section>
-    <h2>운동 그래프 (날짜별 분)</h2>
-    <div class="chart" id="chart"></div>
-    <div class="labels" id="labels"></div>
-  </section>
-
-  <section>
-    <h2>기록 목록</h2>
-    <ul id="list"></ul>
-  </section>
+<div class="card">
+<h2>운동 기록</h2>
+<ul id="list"></ul>
+</div>
 </div>
 
 <script>
-  const state = { goal: null, records: [], points: 0 };
-  const POINTS_PER_WORKOUT = 10;
+var goal=0,points=0,records=[];
+function key(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function todayMin(){var k=key(new Date());return records.filter(function(r){return r.day===k}).reduce(function(s,r){return s+r.min},0)}
+function $(id){return document.getElementById(id)}
+function msg(id,t,err){var e=$(id);e.textContent=t;e.className="msg"+(err?" err":"")}
 
-  function todayStr() {
-    const d = new Date();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return d.getFullYear() + '-' + m + '-' + day;
-  }
+$("goalBtn").onclick=function(){
+var v=parseInt($("goal").value,10);
+if(!v||v<1){msg("goalMsg","1분 이상의 목표를 입력해 주세요.",true);return}
+goal=v;msg("goalMsg","하루 목표를 "+v+"분으로 설정했어요.");render();
+};
 
-  document.getElementById('date').value = todayStr();
+$("addBtn").onclick=function(){
+var kind=$("kind").value.trim(),m=parseInt($("min").value,10);
+if(!kind){msg("addMsg","운동 내용을 입력해 주세요.",true);return}
+if(!m||m<1){msg("addMsg","운동 시간을 1분 이상 입력해 주세요.",true);return}
+var before=todayMin();
+var p=10+m;
+var bonus=0;
+if(goal&&before<goal&&before+m>=goal)bonus=50;
+points+=p+bonus;
+var now=new Date();
+records.unshift({kind:kind,min:m,day:key(now),time:now.toTimeString().slice(0,5),pt:p+bonus});
+$("kind").value="";$("min").value="";
+msg("addMsg","+"+(p+bonus)+"P 획득!"+(bonus?" (목표 달성 보너스 50P 포함)":""));
+render();
+};
 
-  document.getElementById('goalBtn').addEventListener('click', () => {
-    const v = Number(document.getElementById('goal').value);
-    if (!v || v <= 0) return;
-    state.goal = v;
-    document.getElementById('goalMsg').textContent = '하루 목표가 ' + v + '분으로 설정되었습니다.';
-    render();
-  });
+function render(){
+var t=todayMin();
+$("sToday").textContent=t+"분";
+$("sPoint").textContent=points+"P";
+if(goal){
+var pct=Math.min(100,Math.round(t/goal*100));
+$("bar").style.width=pct+"%";
+$("progTxt").textContent=t+" / "+goal+"분 ("+pct+"%)"+(t>=goal?" · 목표 달성!":"");
+}
+var l=$("list");l.innerHTML="";
+if(!records.length){l.innerHTML='<li class="empty">아직 운동 기록이 없어요. 첫 운동을 기록해 보세요.</li>'}
+records.forEach(function(r){
+var li=document.createElement("li");
+var a=document.createElement("span");a.textContent=r.time+" · "+r.kind+" "+r.min+"분";
+var b=document.createElement("span");b.className="pt";b.textContent="+"+r.pt+"P";
+li.appendChild(a);li.appendChild(b);l.appendChild(li);
+});
+draw();
+}
 
-  document.getElementById('addBtn').addEventListener('click', () => {
-    const date = document.getElementById('date').value;
-    const min = Number(document.getElementById('minutes').value);
-    if (!date || !min || min <= 0) return;
-    state.records.push({ date, min });
-    state.points += POINTS_PER_WORKOUT;
-    document.getElementById('addMsg').textContent = min + '분 기록 완료! +' + POINTS_PER_WORKOUT + ' P';
-    document.getElementById('minutes').value = '';
-    render();
-  });
-
-  function render() {
-    const totals = {};
-    state.records.forEach(r => { totals[r.date] = (totals[r.date] || 0) + r.min; });
-
-    const today = totals[todayStr()] || 0;
-    document.getElementById('todayText').textContent = today + '분';
-    document.getElementById('goalText').textContent = state.goal ? state.goal + '분' : '-';
-    const pct = state.goal ? Math.min(100, today / state.goal * 100) : 0;
-    document.getElementById('bar').style.width = pct + '%';
-
-    document.getElementById('points').textContent = state.points + ' P';
-
-    const dates = Object.keys(totals).sort();
-    const max = Math.max(1, ...dates.map(d => totals[d]));
-    const chart = document.getElementById('chart');
-    const labels = document.getElementById('labels');
-    chart.innerHTML = '';
-    labels.innerHTML = '';
-    dates.forEach(d => {
-      const col = document.createElement('div');
-      col.className = 'bar-col';
-      const val = document.createElement('div');
-      val.className = 'bar-val';
-      val.textContent = totals[d];
-      const b = document.createElement('div');
-      b.className = 'bar';
-      b.style.height = (totals[d] / max * 120) + 'px';
-      col.appendChild(val);
-      col.appendChild(b);
-      chart.appendChild(col);
-      const lb = document.createElement('span');
-      lb.textContent = d.slice(5).replace('-', '/');
-      labels.appendChild(lb);
-    });
-
-    const list = document.getElementById('list');
-    list.innerHTML = '';
-    state.records.slice().reverse().forEach(r => {
-      const li = document.createElement('li');
-      li.innerHTML = '<span></span><span></span>';
-      li.children[0].textContent = r.date;
-      li.children[1].textContent = r.min + '분';
-      list.appendChild(li);
-    });
-  }
-
-  render();
+function draw(){
+var c=$("chart"),dpr=window.devicePixelRatio||1,w=c.clientWidth,h=200;
+c.width=w*dpr;c.height=h*dpr;var x=c.getContext("2d");x.scale(dpr,dpr);
+x.clearRect(0,0,w,h);
+var days=[],vals=[];
+for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var k=key(d);
+days.push((d.getMonth()+1)+"/"+d.getDate());
+vals.push(records.filter(function(r){return r.day===k}).reduce(function(s,r){return s+r.min},0));}
+var max=Math.max(goal,Math.max.apply(null,vals),10);
+var top=20,bottom=h-28,gw=w/7;
+x.font="12px sans-serif";x.textAlign="center";
+vals.forEach(function(v,i){
+var bh=(bottom-top)*v/max,bx=i*gw+gw*0.22,bw=gw*0.56;
+x.fillStyle=i===6?"#22e06b":"#178a45";
+x.fillRect(bx,bottom-bh,bw,bh);
+x.fillStyle="#8fa892";x.fillText(days[i],i*gw+gw/2,h-8);
+if(v){x.fillStyle="#e8f5e9";x.fillText(v,i*gw+gw/2,bottom-bh-5)}
+});
+x.strokeStyle="#2a4a32";x.beginPath();x.moveTo(0,bottom+.5);x.lineTo(w,bottom+.5);x.stroke();
+if(goal){var gy=bottom-(bottom-top)*goal/max;
+x.strokeStyle="#c8f7d4";x.setLineDash([5,4]);x.beginPath();x.moveTo(0,gy);x.lineTo(w,gy);x.stroke();x.setLineDash([]);
+x.fillStyle="#c8f7d4";x.textAlign="left";x.fillText("목표 "+goal+"분",4,gy-4);}
+}
+window.addEventListener("resize",draw);
+render();
 </script>
 </body>
 </html>

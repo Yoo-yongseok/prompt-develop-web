@@ -62,7 +62,7 @@ export default async function LearnPage() {
                 실험실과 같은 AI에 아래 지침을 똑같이 주고 각각 따로 만들었습니다. 다른 것은 프롬프트뿐이고, 코드는
                 고치지 않았습니다. AI의 결과는 만들 때마다 달라지니 한 번으로 단정하지 마세요.
               </p>
-              <pre className="overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-[15px] text-foreground/85">
+              <pre className="overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-sm text-foreground/85">
                 {CODEGEN_SYSTEM}
               </pre>
             </div>
@@ -75,7 +75,7 @@ export default async function LearnPage() {
           결과를 본 뒤에도 프롬프트는 계속됩니다
         </h2>        <p className="lead mt-5">무엇을, 어떻게 바꿀지 말해 주세요.</p>
         <div className="mt-10 lg:mt-14">
-          <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,5fr)] gap-10 pb-3 text-[15px] font-semibold text-muted-foreground sm:grid">
+          <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,5fr)] gap-10 pb-3 text-sm font-semibold text-muted-foreground sm:grid">
             <div>막연한 요청</div>
             <div>구체적인 요청</div>
           </div>
@@ -84,7 +84,7 @@ export default async function LearnPage() {
               key={p.vague}
               className="grid gap-2 border-t border-input py-6 last:border-b sm:grid-cols-[minmax(0,2fr)_minmax(0,5fr)] sm:gap-10 lg:py-7"
             >
-              <p className="text-lg text-muted-foreground line-through decoration-muted-foreground/50 lg:text-xl">{p.vague}</p>
+              <p className="text-lg text-muted-foreground line-through decoration-muted-foreground/60 lg:text-xl">{p.vague}</p>
               <p className="text-lg leading-relaxed lg:text-xl lg:leading-relaxed">{p.specific}</p>
             </div>
           ))}

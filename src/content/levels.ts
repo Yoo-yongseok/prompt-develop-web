@@ -15,7 +15,7 @@ export const levels: Level[] = [
     title: "일반적인 요청",
     summary: "흔히 쓰는 한 줄",
     prompt: "운동 기록 앱 만들어줘.",
-    note: "적지 않은 것은 만들어지지 않습니다.",
+    note: "적지 않은 기능은 만들어지지 않습니다.",
   },
   {
     id: 2,

@@ -49,8 +49,8 @@ export function HeroDemo({ htmlByLevel }: { htmlByLevel: Record<number, string |
                 (on ? "border-foreground bg-background" : "border-transparent bg-card hover:border-input")
               }
             >
-              <span className="text-[15px] font-semibold text-muted-foreground">{s.label}</span>
-              <span className={"mt-1.5 block text-[17px] leading-relaxed " + (on ? "" : "line-clamp-2 text-muted-foreground")}>
+              <span className="text-sm font-semibold text-muted-foreground">{s.label}</span>
+              <span className={"mt-1.5 block text-base leading-relaxed " + (on ? "" : "line-clamp-2 text-muted-foreground")}>
                 {s.prompt}
               </span>
             </button>

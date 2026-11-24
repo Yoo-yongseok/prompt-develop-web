@@ -228,7 +228,7 @@ export function StudioWorkbench() {
     const can = prompt.length >= 10 && !needCode;
     const changed = slot.status === "done" && slot.prompt !== prompt;
     let hint = "";
-    if (slot.status === "idle") hint = "AI는 프롬프트에 적힌 것만 만듭니다.";
+    if (slot.status === "idle") hint = "기능은 프롬프트에 적힌 것만 만들어집니다.";
     if (slot.status === "loading") hint = slot.chars === 0 ? "1분쯤 걸립니다." : `${slot.chars.toLocaleString("ko-KR")}자 작성 중`;
     if (changed) hint = "프롬프트가 바뀌었습니다. 다시 만들면 반영됩니다.";
 
@@ -256,7 +256,7 @@ export function StudioWorkbench() {
           />
         )}
         {slot.status === "error" && (
-          <p role="alert" className="mt-4 rounded-xl border border-destructive/50 px-5 py-4 text-[15px] leading-relaxed">
+          <p role="alert" className="mt-4 rounded-xl border border-destructive/50 px-5 py-4 text-sm leading-relaxed">
             {slot.message}
           </p>
         )}
@@ -277,7 +277,7 @@ export function StudioWorkbench() {
             onChange={(e) => setCode(e.target.value)}
             autoComplete="off"
             placeholder="선생님이 알려 준 코드"
-            className="h-11 w-56 rounded-xl border border-input bg-background px-3 text-[15px] focus:border-primary focus:outline-none"
+            className="h-11 w-56 rounded-xl border border-input bg-background px-3 text-sm focus:border-primary focus:outline-none"
           />
         </div>
       )}
@@ -287,7 +287,7 @@ export function StudioWorkbench() {
           <h2 id="s1" className="text-2xl font-bold tracking-[-0.01em] lg:text-[1.75rem]">
             1. 만들고 싶은 앱을 설명해 주세요
           </h2>
-          <p className="mt-2 text-[17px] text-muted-foreground">
+          <p className="mt-2 text-base text-muted-foreground">
             형식 없이 편하게 쓰세요.
           </p>
           {data.source && (
@@ -369,7 +369,7 @@ export function StudioWorkbench() {
         )}
 
         {improveError && (
-          <div role="alert" className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-destructive/50 px-5 py-4 text-[15px]">
+          <div role="alert" className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-destructive/50 px-5 py-4 text-sm">
             <span>{improveError}</span>
             <button type="button" onClick={() => improve(false)} disabled={improving || !hasOriginal} className="font-semibold underline">
               다시 시도
@@ -402,7 +402,7 @@ export function StudioWorkbench() {
               <div>
                 <h3 className="font-bold">Before</h3>
                 <p className="mt-0.5 text-sm text-muted-foreground">내가 쓴 원문</p>
-                <pre className="mt-3 max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-[20px] bg-card p-5 font-sans text-[17px] leading-relaxed">
+                <pre className="mt-3 max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-[20px] bg-card p-5 font-sans text-base leading-relaxed">
                   {analysis.originalPrompt}
                 </pre>
               </div>
@@ -422,7 +422,7 @@ export function StudioWorkbench() {
                 <div className="space-y-5">
                   <div className="panel p-5">
                     <h4 className="font-semibold">처음부터 잘 쓴 부분</h4>
-                    <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed">
+                    <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
                       {analysis.strengths.map((s) => (
                         <li key={s}>{s}</li>
                       ))}
@@ -434,7 +434,7 @@ export function StudioWorkbench() {
                       <p className="mt-1 text-sm text-muted-foreground">
                         정답이 아닙니다. 바꿔도 됩니다.
                       </p>
-                      <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed">
+                      <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
                         {analysis.assumptions.map((s) => (
                           <li key={s}>{s}</li>
                         ))}
@@ -445,7 +445,7 @@ export function StudioWorkbench() {
                 <div className="panel p-5">
                   <h4 className="font-semibold">바뀐 부분과 이유</h4>
                   {analysis.improvements.length === 0 ? (
-                    <p className="mt-2 text-[15px] leading-relaxed">
+                    <p className="mt-2 text-sm leading-relaxed">
                       바꾼 부분이 거의 없습니다. 처음부터 잘 썼습니다.
                     </p>
                   ) : (
@@ -453,7 +453,7 @@ export function StudioWorkbench() {
                       {analysis.improvements.map((i) => (
                         <li key={i.before + i.after} className="py-3.5 first:pt-0 last:pb-0">
                           <p className="text-sm text-muted-foreground">{i.before}</p>
-                          <p className="mt-1 text-[15px] leading-relaxed">{i.after}</p>
+                          <p className="mt-1 text-sm leading-relaxed">{i.after}</p>
                           <p className="mt-1.5 text-sm leading-relaxed text-sky">{i.reason}</p>
                         </li>
                       ))}
@@ -471,7 +471,7 @@ export function StudioWorkbench() {
                   <div className="mt-3 space-y-3">
                     {analysis.followUpQuestions.map((q, idx) => (
                       <div key={q}>
-                        <label htmlFor={`q${idx}`} className="text-[15px]">
+                        <label htmlFor={`q${idx}`} className="text-sm">
                           {q}
                         </label>
                         <input
@@ -479,7 +479,7 @@ export function StudioWorkbench() {
                           value={answers[q] ?? ""}
                           onChange={(e) => setAnswers((a) => ({ ...a, [q]: e.target.value }))}
                           maxLength={300}
-                          className="mt-1.5 h-12 w-full rounded-xl border border-input bg-background px-4 text-[15px] focus:border-primary focus:outline-none"
+                          className="mt-1.5 h-12 w-full rounded-xl border border-input bg-background px-4 text-sm focus:border-primary focus:outline-none"
                         />
                       </div>
                     ))}
@@ -570,7 +570,7 @@ export function StudioWorkbench() {
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             화려함보다 작동, 계산, 잘못된 입력 처리, 내 의도와의 일치를 보세요.
           </p>
-          <dl className="mt-4 grid gap-x-8 gap-y-4 text-[15px] leading-relaxed md:grid-cols-2">
+          <dl className="mt-4 grid gap-x-8 gap-y-4 text-sm leading-relaxed md:grid-cols-2">
             <div>
               <dt className="font-semibold">After가 확실히 다르다</dt>
               <dd className="text-muted-foreground">구체적으로 쓴 것이 만든 차이입니다.</dd>

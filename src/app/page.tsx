@@ -105,20 +105,20 @@ export default async function Home() {
                       <h3 className={"text-xl font-bold " + (step.status === "done" ? "" : "text-muted-foreground")}>
                         {step.title}
                       </h3>
-                      {step.who && <span className="text-[15px] text-muted-foreground">{step.who}</span>}
+                      {step.who && <span className="text-sm text-muted-foreground">{step.who}</span>}
                     </div>
                     {step.status === "done" ? (
                       <>
                         <p className="mt-2.5 leading-[1.75] text-foreground/85">{step.body}</p>
                         {step.quote && (
-                          <p className="mt-4 rounded-xl bg-card px-5 py-4 text-[17px]">
+                          <p className="mt-4 rounded-xl bg-card px-5 py-4 text-base">
                             <span className="mb-1 block text-sm text-muted-foreground">실제 요청</span>
                             {step.quote}
                           </p>
                         )}
                       </>
                     ) : (
-                      <p className="mt-1.5 text-[15px] text-muted-foreground">
+                      <p className="mt-1.5 text-sm text-muted-foreground">
                         진행 전
                       </p>
                     )}

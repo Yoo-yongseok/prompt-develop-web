@@ -32,7 +32,7 @@ export function ElementExplorer() {
                   {el.name}
                 </span>
                 <span className="min-w-0">
-                  <span className={cn("block text-[17px] lg:text-lg", on ? "font-semibold" : "text-muted-foreground")}>
+                  <span className={cn("block text-base lg:text-lg", on ? "font-semibold" : "text-muted-foreground")}>
                     {el.question}
                   </span>
                   {on && <span className="mt-1.5 block leading-relaxed text-muted-foreground">예: {el.example}</span>}
@@ -44,7 +44,7 @@ export function ElementExplorer() {
       </ul>
 
       <div className="self-start rounded-[24px] bg-card p-6 lg:sticky lg:top-24 lg:p-9">
-        <p className="text-[15px] text-muted-foreground">          <strong className="font-bold" style={{ color: current.color }}>
+        <p className="text-sm text-muted-foreground">          <strong className="font-bold" style={{ color: current.color }}>
             {current.name}
           </strong>
           을(를) 담은 문장
@@ -53,7 +53,7 @@ export function ElementExplorer() {
           {annotatedPrompt.map((line) => {
             const hit = line.keys.includes(active);
             return (
-              <p key={line.text} className={cn("transition-colors duration-150", !hit && "text-muted-foreground/60")}>
+              <p key={line.text} className={cn("transition-colors duration-150", !hit && "text-muted-foreground")}>
                 <span
                   className="box-decoration-clone px-1 py-0.5"
                   style={hit ? { background: `color-mix(in oklab, ${current.color} 20%, transparent)` } : undefined}
@@ -63,7 +63,7 @@ export function ElementExplorer() {
               </p>
             );
           })}
-        </div>        <p className="mt-6 border-t border-input pt-5 text-[15px] leading-relaxed text-muted-foreground">
+        </div>        <p className="mt-6 border-t border-input pt-5 text-sm leading-relaxed text-muted-foreground">
           형식은 없습니다. 빠진 것이 없는지 확인하는 기준입니다.
         </p>
       </div>

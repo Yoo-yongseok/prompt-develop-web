@@ -48,11 +48,11 @@ function Detail({ career, onBring }: { career: Career; onBring: () => void }) {
 
       <dl className="mt-8 grid gap-x-10 gap-y-6 border-t border-input pt-7 sm:grid-cols-3">
         <div>
-          <dt className="text-[15px] text-muted-foreground">목적</dt>
+          <dt className="text-sm text-muted-foreground">목적</dt>
           <dd className="mt-1.5 leading-relaxed">{career.purpose}</dd>
         </div>
         <div>
-          <dt className="text-[15px] text-muted-foreground">주요 기능</dt>
+          <dt className="text-sm text-muted-foreground">주요 기능</dt>
           <dd className="mt-1.5 leading-relaxed">
             <ul>
               {career.features.map((f) => (
@@ -62,7 +62,7 @@ function Detail({ career, onBring }: { career: Career; onBring: () => void }) {
           </dd>
         </div>
         <div>
-          <dt className="text-[15px] text-muted-foreground">관련 직업</dt>
+          <dt className="text-sm text-muted-foreground">관련 직업</dt>
           <dd className="mt-1.5 leading-relaxed">{career.jobs.join(", ")}</dd>
         </div>
       </dl>
@@ -87,10 +87,10 @@ function Detail({ career, onBring }: { career: Career; onBring: () => void }) {
             </button>
           ))}
         </div>
-        <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-[20px] bg-card p-6 font-sans text-[17px] leading-relaxed">
+        <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-[20px] bg-card p-6 font-sans text-base leading-relaxed">
           {tab === "student" ? career.studentPrompt : career.improvedPrompt}
         </pre>        {tab === "improved" && (
-          <p className="mt-3 text-[15px] text-muted-foreground">‘AI 제안 기본값’은 바꿔도 됩니다.</p>
+          <p className="mt-3 text-sm text-muted-foreground">‘AI 제안 기본값’은 바꿔도 됩니다.</p>
         )}
       </div>
 
@@ -167,7 +167,7 @@ export function CareerExplorer() {
               aria-selected={on}
               onClick={() => pick(c.id)}
               className={cn(
-                "flex w-full items-center gap-3 border-b border-input px-1 py-3.5 text-left text-[17px] transition-colors duration-150 lg:px-2",
+                "flex w-full items-center gap-3 border-b border-input px-1 py-3.5 text-left text-base transition-colors duration-150 lg:px-2",
                 on ? "font-bold text-primary" : "font-medium text-muted-foreground hover:text-foreground",
               )}
             >

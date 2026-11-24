@@ -12,7 +12,7 @@ function PromptBox({ level, open, fixed }: { level: Demo; open: boolean; fixed?:
     <pre
       className={
         (fixed ? "h-64 " : "max-h-64 ") +
-        "overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-[15px] leading-relaxed"
+        "overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-sm leading-relaxed"
       }
     >
       {level.prompt}
@@ -23,7 +23,7 @@ function PromptBox({ level, open, fixed }: { level: Demo; open: boolean; fixed?:
 function Result({ level }: { level: Demo }) {
   if (!level.html) {
     return (
-      <div className="grid h-80 place-items-center rounded-[20px] border border-dashed border-input p-6 text-center text-[15px] text-muted-foreground">
+      <div className="grid h-80 place-items-center rounded-[20px] border border-dashed border-input p-6 text-center text-sm text-muted-foreground">
         결과물 파일이 없습니다: {level.file}
       </div>
     );
@@ -62,7 +62,7 @@ export function LevelCompare({ htmlByLevel }: { htmlByLevel: Record<number, stri
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-5 text-[15px] font-semibold">
+        <div className="flex items-center gap-5 text-sm font-semibold">
           <button
             type="button"
             onClick={() => setShowPrompt((v) => !v)}

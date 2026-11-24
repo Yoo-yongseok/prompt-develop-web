@@ -6,162 +6,164 @@
 <title>운동 기록</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#000;color:#eee;font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;padding:16px;max-width:480px;margin:0 auto}
-h1{color:#39ff14;font-size:22px;font-weight:900;letter-spacing:1px;margin-bottom:16px;font-style:italic}
-h2{color:#39ff14;font-size:15px;font-weight:800;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
-section{background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #39ff14;border-radius:10px;padding:14px;margin-bottom:14px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat{text-align:center}
+body{background:#0a0a0a;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16px;line-height:1.5}
+.wrap{max-width:420px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:24px;font-weight:900;letter-spacing:-0.5px;margin-bottom:4px}
+h1 span{color:#39ff14}
+.sub{color:#888;font-size:13px;margin-bottom:20px}
+.card{background:#151515;border:1px solid #262626;border-radius:16px;padding:18px;margin-bottom:16px}
+.card h2{font-size:14px;color:#39ff14;font-weight:800;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#0d0d0d;border:1px solid #262626;border-radius:12px;padding:12px 6px;text-align:center}
 .stat .v{font-size:22px;font-weight:900;color:#39ff14}
-.stat .l{font-size:11px;color:#999;margin-top:2px}
-.bar{height:12px;background:#1a1a1a;border-radius:6px;overflow:hidden}
-.bar>div{height:100%;background:#39ff14;box-shadow:0 0 8px #39ff14;transition:width .3s}
-.sub{font-size:12px;color:#aaa;margin-top:6px}
-label{display:block;font-size:12px;color:#aaa;margin:8px 0 4px}
-input,select{width:100%;background:#000;border:1px solid #333;color:#fff;padding:10px;border-radius:6px;font-size:15px}
+.stat .l{font-size:12px;color:#999}
+.bar{height:14px;background:#222;border-radius:7px;overflow:hidden}
+.bar>div{height:100%;background:#39ff14;box-shadow:0 0 10px #39ff14;transition:width .3s}
+.row{display:flex;justify-content:space-between;font-size:13px;color:#aaa;margin:6px 0}
+label{display:block;font-size:13px;color:#aaa;margin:10px 0 4px}
+input,select{width:100%;height:46px;background:#0d0d0d;border:1px solid #333;border-radius:10px;color:#fff;padding:0 12px;font-size:16px}
 input:focus,select:focus{outline:none;border-color:#39ff14}
-button{background:#39ff14;color:#000;border:none;padding:10px 14px;border-radius:6px;font-weight:800;font-size:14px;cursor:pointer}
-button.ghost{background:transparent;color:#39ff14;border:1px solid #39ff14}
-button.danger{background:transparent;color:#ff4d4d;border:1px solid #ff4d4d}
-.row{display:flex;gap:8px;margin-top:12px}
-.row button{flex:1}
-.msg{font-size:12px;color:#ff4d4d;margin-top:8px;min-height:14px}
-.chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:16px}
-.col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
-.col .b{width:100%;background:#39ff14;border-radius:4px 4px 0 0;min-height:2px}
-.col .n{font-size:10px;color:#39ff14;margin-bottom:3px}
-.col .d{font-size:10px;color:#888;margin-top:4px}
-.item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1f1f1f;gap:8px}
+button{height:46px;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer}
+.btn{width:100%;background:#39ff14;color:#000;margin-top:14px}
+.btn2{background:#262626;color:#fff;padding:0 14px}
+.inline{display:flex;gap:8px;align-items:flex-end}
+.inline input{flex:1}
+.msg{font-size:13px;margin-top:8px;min-height:18px}
+.err{color:#ff5a5a}.ok{color:#39ff14}
+.chart{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:16px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.col .b{width:100%;background:#39ff14;border-radius:6px 6px 0 0;min-height:2px;transition:height .3s}
+.col .n{font-size:11px;color:#39ff14;margin-bottom:2px}
+.col .d{font-size:11px;color:#888;margin-top:4px}
+.item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #222}
 .item:last-child{border-bottom:none}
 .item .t{font-weight:700}
-.item .s{font-size:12px;color:#888}
-.item button{padding:6px 10px;font-size:12px}
-.pts{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.item .s{font-size:13px;color:#888}
+.item .acts{display:flex;gap:6px}
+.item button{height:36px;padding:0 12px;font-size:13px}
+.edit{background:#262626;color:#39ff14}
+.del{background:#262626;color:#ff5a5a}
+.empty{color:#777;font-size:14px;text-align:center;padding:10px 0}
+.lv{font-size:13px;color:#aaa;margin-top:10px}
+.btns{display:flex;gap:8px}
+.btns .btn{flex:1}
 </style>
 </head>
 <body>
-<h1>⚡ 운동 습관 챌린지</h1>
+<div class="wrap">
+<h1>FIT<span>LEVEL</span></h1>
+<p class="sub">매일 운동하고 레벨을 올려보세요</p>
 
-<section>
+<div class="card">
 <h2>오늘</h2>
 <div class="stats">
 <div class="stat"><div class="v" id="todayMin">0</div><div class="l">오늘 운동(분)</div></div>
 <div class="stat"><div class="v" id="rate">0%</div><div class="l">목표 달성률</div></div>
 <div class="stat"><div class="v" id="level">1</div><div class="l">현재 레벨</div></div>
 </div>
+<div class="row"><span>목표 달성률</span><span id="goalText">0 / 30분</span></div>
 <div class="bar"><div id="goalBar" style="width:0%"></div></div>
-<div class="sub" id="goalText"></div>
-<div class="sub">총 운동 시간: <b id="totalMin" style="color:#39ff14">0</b>분</div>
-</section>
+<div class="row" style="margin-top:12px"><span>총 운동 시간</span><span id="totalMin">0분</span></div>
+<div class="row"><span>누적 포인트</span><span id="points">0P</span></div>
+<div class="lv">다음 레벨까지 <span id="nextLv">100</span>P</div>
+<div class="bar" style="height:8px;margin-top:4px"><div id="lvBar" style="width:0%"></div></div>
+</div>
 
-<section>
-<h2>목표 설정</h2>
-<label>하루 운동 목표 시간(분)</label>
-<input type="number" id="goalInput" min="1" step="1" value="30">
-<div class="row"><button id="goalBtn">목표 저장</button></div>
+<div class="card">
+<h2>하루 목표 설정</h2>
+<div class="inline">
+<div style="flex:1"><label for="goalInput">하루 목표 시간(분)</label><input id="goalInput" type="number" min="1" max="1440" step="1" value="30"></div>
+<button class="btn2" id="goalBtn">저장</button>
+</div>
 <div class="msg" id="goalMsg"></div>
-</section>
+</div>
 
-<section>
-<h2>보상</h2>
-<div class="pts"><span>누적 포인트: <b id="points" style="color:#39ff14">0</b>P</span><span>레벨 <b id="level2">1</b></span></div>
-<div class="bar"><div id="lvBar" style="width:0%"></div></div>
-<div class="sub" id="lvText"></div>
-</section>
-
-<section>
-<h2 id="formTitle">운동 기록하기</h2>
-<label>운동 종류</label>
-<input type="text" id="type" placeholder="예: 달리기">
-<label>날짜</label>
-<input type="date" id="date">
-<label>운동 시간(분)</label>
-<input type="number" id="min" min="1" step="1" placeholder="예: 30">
-<div class="row">
-<button id="saveBtn">기록 추가</button>
-<button class="ghost" id="cancelBtn" style="display:none">취소</button>
+<div class="card">
+<h2 id="formTitle">운동 기록</h2>
+<label for="type">운동 종류</label>
+<input id="type" type="text" maxlength="20" placeholder="예: 줄넘기">
+<label for="date">날짜</label>
+<input id="date" type="date">
+<label for="min">운동 시간(분)</label>
+<input id="min" type="number" min="1" max="1440" step="1" placeholder="분 단위로 입력">
+<div class="btns">
+<button class="btn" id="saveBtn">기록하기</button>
+<button class="btn btn2" id="cancelBtn" style="display:none">취소</button>
 </div>
 <div class="msg" id="formMsg"></div>
-</section>
+</div>
 
-<section>
+<div class="card">
 <h2>최근 7일</h2>
 <div class="chart" id="chart"></div>
-</section>
+</div>
 
-<section>
-<h2>운동 기록</h2>
+<div class="card">
+<h2>기록 목록</h2>
 <div id="list"></div>
-</section>
+</div>
+</div>
 
 <script>
 let records=[],goal=30,editId=null,nextId=1;
 const $=id=>document.getElementById(id);
-const fmt=d=>{const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())};
+const fmt=d=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+dd};
 const today=()=>fmt(new Date());
 $('date').value=today();
 
+function msg(el,t,ok){el.textContent=t;el.className='msg '+(ok?'ok':'err')}
+
 function render(){
-  const t=today();
-  const todayMin=records.filter(r=>r.date===t).reduce((a,r)=>a+r.min,0);
-  const total=records.reduce((a,r)=>a+r.min,0);
-  const rate=Math.round(todayMin/goal*100);
-  $('todayMin').textContent=todayMin;
-  $('rate').textContent=rate+'%';
-  $('goalBar').style.width=Math.min(rate,100)+'%';
-  $('goalText').textContent=`${todayMin}분 / 목표 ${goal}분`;
-  $('totalMin').textContent=total;
-  const pts=Math.floor(total/10)*10;
-  const lv=Math.floor(pts/100)+1;
-  $('points').textContent=pts;
-  $('level').textContent=lv;$('level2').textContent=lv;
-  $('lvBar').style.width=(pts%100)+'%';
-  $('lvText').textContent=`다음 레벨까지 ${100-pts%100}P`;
-  // chart
-  const days=[];
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d)}
-  const vals=days.map(d=>records.filter(r=>r.date===fmt(d)).reduce((a,r)=>a+r.min,0));
-  const max=Math.max(...vals,1);
-  $('chart').innerHTML=days.map((d,i)=>`<div class="col"><div class="n">${vals[i]}</div><div class="b" style="height:${vals[i]/max*100}px"></div><div class="d">${d.getMonth()+1}/${d.getDate()}</div></div>`).join('');
-  // list
-  const sorted=[...records].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
-  $('list').innerHTML=sorted.map(r=>`<div class="item"><div><div class="t">${esc(r.type)}</div><div class="s">${r.date} · ${r.min}분</div></div><div style="display:flex;gap:6px"><button class="ghost" onclick="edit(${r.id})">수정</button><button class="danger" onclick="del(${r.id})">삭제</button></div></div>`).join('');
+ const t=today();
+ const todayMin=records.filter(r=>r.date===t).reduce((a,r)=>a+r.min,0);
+ const total=records.reduce((a,r)=>a+r.min,0);
+ const pts=Math.floor(total/10)*10;
+ const lv=Math.floor(pts/100)+1;
+ const rate=goal>0?Math.round(todayMin/goal*100):0;
+ $('todayMin').textContent=todayMin;
+ $('rate').textContent=rate+'%';
+ $('level').textContent=lv;
+ $('goalText').textContent=todayMin+' / '+goal+'분';
+ $('goalBar').style.width=Math.min(rate,100)+'%';
+ $('totalMin').textContent=total+'분';
+ $('points').textContent=pts+'P';
+ $('nextLv').textContent=100-(pts%100);
+ $('lvBar').style.width=(pts%100)+'%';
+
+ const days=[];
+ for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=fmt(d);days.push({k,label:(d.getMonth()+1)+'/'+d.getDate(),v:records.filter(r=>r.date===k).reduce((a,r)=>a+r.min,0)})}
+ const max=Math.max(...days.map(d=>d.v),1);
+ $('chart').innerHTML=days.map(d=>`<div class="col"><div class="n">${d.v}</div><div class="b" style="height:${d.v/max*100}%"></div><div class="d">${d.label}</div></div>`).join('');
+
+ const sorted=[...records].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ $('list').innerHTML=sorted.length?sorted.map(r=>`<div class="item"><div><div class="t">${esc(r.type)}</div><div class="s">${r.date} · ${r.min}분</div></div><div class="acts"><button class="edit" data-e="${r.id}">수정</button><button class="del" data-d="${r.id}">삭제</button></div></div>`).join(''):'<div class="empty">아직 운동 기록이 없습니다.</div>';
 }
 function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-$('goalBtn').onclick=()=>{
-  const v=$('goalInput').value.trim();
-  if(!/^\d+$/.test(v)||+v<=0){$('goalMsg').textContent='1분 이상의 정수로 입력해 주세요.';return}
-  goal=+v;$('goalMsg').textContent='';render();
-};
+function resetForm(){editId=null;$('type').value='';$('min').value='';$('date').value=today();$('saveBtn').textContent='기록하기';$('formTitle').textContent='운동 기록';$('cancelBtn').style.display='none'}
 
 $('saveBtn').onclick=()=>{
-  const type=$('type').value.trim(),date=$('date').value,mv=$('min').value.trim();
-  if(!type){$('formMsg').textContent='운동 종류를 입력해 주세요.';return}
-  if(!date){$('formMsg').textContent='날짜를 선택해 주세요.';return}
-  if(!/^\d+$/.test(mv)||+mv<=0||+mv>1440){$('formMsg').textContent='운동 시간은 1~1440분 사이의 정수로 입력해 주세요.';return}
-  if(editId!==null){Object.assign(records.find(r=>r.id===editId),{type,date,min:+mv})}
-  else records.push({id:nextId++,type,date,min:+mv});
-  resetForm();render();
+ const type=$('type').value.trim(),date=$('date').value,raw=$('min').value.trim(),m=$('formMsg');
+ if(!type)return msg(m,'운동 종류를 입력하세요.');
+ if(!date)return msg(m,'날짜를 선택하세요.');
+ if(!/^\d+$/.test(raw))return msg(m,'운동 시간은 1 이상의 정수(분)로 입력하세요.');
+ const min=parseInt(raw,10);
+ if(min<1||min>1440)return msg(m,'운동 시간은 1~1440분 사이로 입력하세요.');
+ if(editId!==null){const r=records.find(x=>x.id===editId);Object.assign(r,{type,date,min});msg(m,'기록을 수정했습니다.',1)}
+ else{records.push({id:nextId++,type,date,min});msg(m,'기록을 추가했습니다.',1)}
+ resetForm();render();
 };
-function resetForm(){
-  editId=null;$('type').value='';$('min').value='';$('date').value=today();
-  $('formMsg').textContent='';$('saveBtn').textContent='기록 추가';
-  $('formTitle').textContent='운동 기록하기';$('cancelBtn').style.display='none';
-}
-$('cancelBtn').onclick=resetForm;
-function edit(id){
-  const r=records.find(x=>x.id===id);editId=id;
-  $('type').value=r.type;$('date').value=r.date;$('min').value=r.min;
-  $('saveBtn').textContent='수정 저장';$('formTitle').textContent='기록 수정';
-  $('cancelBtn').style.display='block';$('formMsg').textContent='';
-  $('type').scrollIntoView({block:'center'});
-}
-function del(id){
-  records=records.filter(r=>r.id!==id);
-  if(editId===id)resetForm();
-  render();
-}
+$('cancelBtn').onclick=()=>{resetForm();$('formMsg').textContent=''};
+$('list').onclick=e=>{
+ const ed=e.target.dataset.e,dl=e.target.dataset.d;
+ if(ed){const r=records.find(x=>x.id==ed);editId=r.id;$('type').value=r.type;$('date').value=r.date;$('min').value=r.min;$('saveBtn').textContent='수정 저장';$('formTitle').textContent='기록 수정';$('cancelBtn').style.display='block';$('formMsg').textContent='';$('type').scrollIntoView({behavior:'smooth',block:'center'})}
+ if(dl){records=records.filter(x=>x.id!=dl);if(editId==dl)resetForm();msg($('formMsg'),'기록을 삭제했습니다.',1);render()}
+};
+$('goalBtn').onclick=()=>{
+ const raw=$('goalInput').value.trim(),m=$('goalMsg');
+ if(!/^\d+$/.test(raw)||+raw<1||+raw>1440)return msg(m,'목표는 1~1440분 사이의 정수로 입력하세요.');
+ goal=parseInt(raw,10);msg(m,'목표를 '+goal+'분으로 설정했습니다.',1);render();
+};
 render();
 </script>
 </body>

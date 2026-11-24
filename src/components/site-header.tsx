@@ -47,7 +47,7 @@ export function SiteHeader() {
                 href={m.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative whitespace-nowrap rounded-lg px-2 py-3 text-sm font-semibold transition-colors duration-150 sm:px-4 sm:text-base",
+                  "relative whitespace-nowrap rounded-lg px-2 py-3 text-[15px] font-semibold transition-colors duration-150 sm:px-4 sm:text-base",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
