@@ -61,27 +61,30 @@ export function SandboxFrame({
   const [run, setRun] = useState(0);
   const doc = useMemo(() => withCsp(html), [html]);
 
+  // 생성된 앱은 휴대폰 화면 크기로 보여 준다. 앱이 모바일 레이아웃으로 그려진다.
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-[20px] border border-input bg-background", className)}>
-      <div className="flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-2.5">
+    <div className={cn("flex flex-col items-center rounded-[28px] bg-card px-4 pb-6 pt-4 sm:px-6 sm:pb-8", className)}>
+      <div className="flex w-full max-w-[400px] items-center justify-between gap-3 pb-3">
         <span className="truncate text-sm text-muted-foreground">{title}</span>
         <button
           type="button"
           onClick={() => setRun((n) => n + 1)}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md py-1 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground"
         >
           <RotateCcw className="size-3.5" aria-hidden="true" />
           처음 상태로
         </button>
       </div>
-      <iframe
-        key={run}
-        title={title}
-        srcDoc={doc}
-        sandbox="allow-scripts"
-        referrerPolicy="no-referrer"
-        className="min-h-0 w-full flex-1 bg-white"
-      />
+      <div className="w-full max-w-[400px] rounded-[44px] bg-[#0b1226] p-[10px] ring-1 ring-black/10 dark:bg-[#05080f] dark:ring-white/20">
+        <iframe
+          key={run}
+          title={title}
+          srcDoc={doc}
+          sandbox="allow-scripts"
+          referrerPolicy="no-referrer"
+          className="block h-[620px] w-full rounded-[34px] bg-white sm:h-[700px]"
+        />
+      </div>
     </div>
   );
 }

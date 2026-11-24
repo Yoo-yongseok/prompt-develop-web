@@ -6,16 +6,21 @@ import { SandboxFrame } from "@/components/sandbox-frame";
 
 type Demo = Level & { html: string | null };
 
-function PromptBox({ level, open }: { level: Demo; open: boolean }) {
+function PromptBox({ level, open, fixed }: { level: Demo; open: boolean; fixed?: boolean }) {
   if (!open) return null;
   return (
-    <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-[15px] leading-relaxed">
+    <pre
+      className={
+        (fixed ? "h-64 " : "max-h-64 ") +
+        "overflow-auto whitespace-pre-wrap rounded-xl bg-card p-5 font-sans text-[15px] leading-relaxed"
+      }
+    >
       {level.prompt}
     </pre>
   );
 }
 
-function Result({ level, tall }: { level: Demo; tall?: boolean }) {
+function Result({ level }: { level: Demo }) {
   if (!level.html) {
     return (
       <div className="grid h-80 place-items-center rounded-[20px] border border-dashed border-input p-6 text-center text-[15px] text-muted-foreground">
@@ -27,7 +32,6 @@ function Result({ level, tall }: { level: Demo; tall?: boolean }) {
     <SandboxFrame
       html={level.html}
       title={`Level ${level.id} 프롬프트로 실제 생성된 앱`}
-      className={tall ? "h-[720px]" : "h-[640px]"}
     />
   );
 }
@@ -87,7 +91,7 @@ export function LevelCompare({ htmlByLevel }: { htmlByLevel: Record<number, stri
             <PromptBox level={current} open={showPrompt} />
             <p className="leading-relaxed">{current.note}</p>
           </div>
-          <Result level={current} tall />
+          <Result level={current} />
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-3 gap-5">
@@ -99,7 +103,7 @@ export function LevelCompare({ htmlByLevel }: { htmlByLevel: Record<number, stri
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">{d.summary}</p>
               </div>
-              <PromptBox level={d} open={showPrompt} />
+              <PromptBox level={d} open={showPrompt} fixed />
               <Result level={d} />
             </div>
           ))}

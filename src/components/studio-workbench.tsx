@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Copy, Download, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
+import { Copy, Download, ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { elements } from "@/content/elements";
 import { SandboxFrame, extractHtml } from "@/components/sandbox-frame";
@@ -32,11 +32,6 @@ type Slot =
   | { status: "loading"; chars: number }
   | { status: "done"; html: string; prompt: string }
   | { status: "error"; message: string };
-
-const sideLabel: Record<Side, string> = {
-  before: "Before: 내가 쓴 프롬프트",
-  after: "After: AI와 함께 발전시킨 프롬프트",
-};
 
 function buildTxt(data: StudioData) {
   const day = new Date().toLocaleDateString("ko-KR");
@@ -88,11 +83,9 @@ export function StudioWorkbench() {
     before: { status: "idle" },
     after: { status: "idle" },
   });
-  const [tab, setTab] = useState<Side>("before");
-  const [showPrompts, setShowPrompts] = useState(false);
 
+  const [compareTab, setCompareTab] = useState<Side>("before");
   const finalRef = useRef<HTMLTextAreaElement>(null);
-  const compareRef = useRef<HTMLElement>(null);
   const aborter = useRef<AbortController | null>(null);
 
   // 브라우저에 저장된 내용 불러오기, AI 사용 가능 여부 확인
@@ -122,12 +115,10 @@ export function StudioWorkbench() {
 
   const analysis = data.analysis;
   const hasOriginal = data.original.trim().length >= 10;
-  const hasFinal = data.final.trim().length >= 10;
   const aiReady = ai?.aiReady ?? false;
   const needCode = Boolean(ai?.codeRequired) && !code.trim();
   const stale = Boolean(analysis) && analysis!.originalPrompt.trim() !== data.original.trim();
-  const generating = slots.before.status === "loading" || slots.after.status === "loading";
-  const anyResult = slots.before.status !== "idle" || slots.after.status !== "idle";
+  const bothDone = slots.before.status === "done" && slots.after.status === "done";
 
   function onAuthError(e: unknown) {
     if (e instanceof StudioApiError && e.status === 401) {
@@ -182,14 +173,6 @@ export function StudioWorkbench() {
     }
   }
 
-  function generateBoth() {
-    if (generating || !hasOriginal || !hasFinal) return;
-    // 두 요청은 서로 독립이고 동시에 보낸다. 서버는 어느 쪽이 Before인지 모른다.
-    void generate("before");
-    void generate("after");
-    window.setTimeout(() => compareRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-  }
-
   function pullOriginal(force = false) {
     if (!force && data.final.trim()) {
       setConfirmPull(true);
@@ -238,8 +221,67 @@ export function StudioWorkbench() {
     </>
   );
 
+  /** 프롬프트 옆에 붙는 "앱 만들기" 버튼과 결과. Before와 After가 같은 함수, 같은 조건을 쓴다. */
+  function appSlot(side: Side) {
+    if (!aiReady) return null;
+    const slot = slots[side];
+    const prompt = (side === "before" ? data.original : data.final).trim();
+    const can = prompt.length >= 10 && !needCode;
+    const changed = slot.status === "done" && slot.prompt !== prompt;
+    let hint = "";
+    if (slot.status === "idle") hint = "대략 이런 앱이 나온다는 것을 보여 주는 시제품입니다.";
+    if (slot.status === "loading") hint = slot.chars === 0 ? "1분쯤 걸립니다." : `${slot.chars.toLocaleString("ko-KR")}자 작성 중`;
+    if (changed) hint = "프롬프트가 바뀌었습니다. 다시 만들면 반영됩니다.";
+
+    return (
+      <div className="mt-5">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <button
+            type="button"
+            onClick={() => generate(side)}
+            disabled={!can || slot.status === "loading"}
+            className="btn-quiet btn-sm"
+          >
+            {slot.status === "loading" ? "만드는 중…" : slot.status === "idle" ? "이 프롬프트로 앱 만들기" : "다시 만들기"}
+          </button>
+          <span className="text-sm tabular-nums text-muted-foreground" aria-live="polite">
+            {hint}
+          </span>
+        </div>
+        {slot.status === "loading" && <div className="mt-4 h-40 animate-pulse rounded-[20px] bg-card" />}
+        {slot.status === "done" && (
+          <SandboxFrame
+            html={slot.html}
+            title={side === "before" ? "내 프롬프트로 만든 앱" : "After 프롬프트로 만든 앱"}
+            className="mt-4"
+          />
+        )}
+        {slot.status === "error" && (
+          <p role="alert" className="mt-4 rounded-xl border border-destructive/50 px-5 py-4 text-[15px] leading-relaxed">
+            {slot.message}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-16 lg:space-y-24">
+      {aiReady && ai?.codeRequired && (
+        <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor="class-code" className="text-sm font-semibold">
+            수업 접속 코드
+          </label>
+          <input
+            id="class-code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            autoComplete="off"
+            placeholder="선생님이 알려 준 코드"
+            className="h-11 w-56 rounded-xl border border-input bg-background px-3 text-[15px] focus:border-primary focus:outline-none"
+          />
+        </div>
+      )}
       {/* 1. 내 프롬프트 */}
       <section aria-labelledby="s1" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div>
@@ -274,6 +316,7 @@ export function StudioWorkbench() {
               {saveState === "idle" && `${data.original.length} / 2000자`}
             </span>
           </div>
+          {appSlot("before")}
         </div>
 
         <aside aria-label="프롬프트 작성 가이드" className="panel self-start p-5">
@@ -320,22 +363,6 @@ export function StudioWorkbench() {
           <p className="mt-4 rounded-xl border border-dashed border-border px-5 py-4 text-sm leading-relaxed text-muted-foreground">
             AI가 연결되어 있지 않습니다. 아래에서 직접 다듬어 주세요.
           </p>
-        )}
-
-        {aiReady && ai?.codeRequired && (
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <label htmlFor="class-code" className="text-sm font-semibold">
-              수업 접속 코드
-            </label>
-            <input
-              id="class-code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              autoComplete="off"
-              placeholder="선생님이 알려 준 코드"
-              className="h-11 w-56 rounded-xl border border-input bg-background px-3 text-[15px] focus:border-primary focus:outline-none"
-            />
-          </div>
         )}
 
         {aiReady && !hasOriginal && !analysis && (
@@ -386,6 +413,7 @@ export function StudioWorkbench() {
                   AI와 발전시킨 프롬프트. 직접 고칠 수 있습니다.
                 </p>
                 <div className="mt-3">{finalTextarea}</div>
+                {appSlot("after")}
               </div>
             </div>
 
@@ -498,154 +526,80 @@ export function StudioWorkbench() {
               </div>
             )}
             <div className="mt-4">{finalTextarea}</div>
+            {appSlot("after")}
           </div>
         )}
       </section>
 
-      {/* 3. 결과물 비교 */}
-      {aiReady && (
-        <section aria-labelledby="s3" ref={compareRef} className="scroll-mt-24">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-[60ch]">
-              <h2 id="s3" className="text-2xl font-bold tracking-[-0.01em] lg:text-[1.75rem]">
-                3. 실제 앱으로 비교하기
-              </h2>
-              <p className="mt-1 leading-relaxed text-muted-foreground">
-                같은 AI가 같은 조건으로 각각 만듭니다. 1~2분 걸립니다.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={generateBoth}
-              disabled={generating || !hasOriginal || !hasFinal || needCode}
-              className="btn-primary shrink-0"
-            >
-              {generating ? "만드는 중…" : anyResult ? "둘 다 다시 만들기" : "두 앱 만들기"}
-            </button>
+      {/* 두 앱을 모두 만들었을 때의 비교 안내 */}
+      {bothDone && (
+        <section aria-labelledby="cmp">
+          <h2 id="cmp" className="text-2xl font-bold tracking-[-0.01em] lg:text-[1.75rem]">
+            두 앱 나란히 보기
+          </h2>
+          {/* 이미 만들어진 HTML을 다시 보여 줄 뿐이다. AI를 다시 부르지 않으므로 비용이 들지 않는다. */}
+          <div role="tablist" aria-label="앱 전환" className="seg mt-4 lg:hidden">
+            {(["before", "after"] as const).map((side) => (
+              <button
+                key={side}
+                role="tab"
+                type="button"
+                aria-selected={compareTab === side}
+                onClick={() => setCompareTab(side)}
+                className="flex-1"
+              >
+                {side === "before" ? "Before" : "After"}
+              </button>
+            ))}
           </div>
-
-          {!hasFinal && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              2번을 먼저 마쳐 주세요.
-            </p>
-          )}
-
-          {anyResult && (
-            <div className="mt-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div role="tablist" aria-label="결과물 전환" className="seg lg:hidden">
-                  {(["before", "after"] as const).map((s) => (
-                    <button
-                      key={s}
-                      role="tab"
-                      type="button"
-                      aria-selected={tab === s}
-                      onClick={() => setTab(s)}
-                    >
-                      {s === "before" ? "Before" : "After"}
-                    </button>
-                  ))}
+          <div className="mt-4 grid gap-5 lg:mt-6 lg:grid-cols-2">
+            {(["before", "after"] as const).map((side) => {
+              const slot = slots[side];
+              if (slot.status !== "done") return null;
+              return (
+                <div key={side} className={cn("min-w-0", compareTab !== side && "hidden lg:block")}>
+                  <SandboxFrame
+                    html={slot.html}
+                    title={side === "before" ? "Before: 내 프롬프트로 만든 앱" : "After: AI와 발전시킨 프롬프트로 만든 앱"}
+                  />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPrompts((v) => !v)}
-                  aria-expanded={showPrompts}
-                  className="text-[15px] font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                >
-                  프롬프트 {showPrompts ? "접기" : "펼치기"}
-                </button>
-              </div>
-
-              <div className="mt-4 grid gap-5 lg:grid-cols-2">
-                {(["before", "after"] as const).map((side) => {
-                  const slot = slots[side];
-                  return (
-                    <div key={side} className={cn("min-w-0 space-y-3", tab !== side && "hidden lg:block")}>
-                      <h3 className="font-bold">{sideLabel[side]}</h3>
-                      {showPrompts && (
-                        <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-xl border border-border bg-background p-4 font-sans text-sm leading-relaxed">
-                          {slot.status === "done" ? slot.prompt : side === "before" ? data.original : data.final}
-                        </pre>
-                      )}
-                      {slot.status === "loading" && (
-                        <div aria-live="polite" className="grid h-[640px] place-items-center rounded-[20px] bg-card p-6 text-center">
-                          <div>
-                            <div className="mx-auto size-8 animate-spin rounded-full border-2 border-input border-t-primary" aria-hidden="true" />
-                            <p className="mt-4 font-semibold">
-                              {slot.chars === 0 ? "AI가 설계하는 중" : "코드를 쓰는 중"}
-                            </p>
-                            <p className="mt-1 text-sm tabular-nums text-muted-foreground">
-                              {slot.chars === 0 ? "잠시만요" : `${slot.chars.toLocaleString("ko-KR")}자 작성`}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {slot.status === "done" && (
-                        <SandboxFrame html={slot.html} title={`${side === "before" ? "Before" : "After"} 프롬프트로 생성된 앱`} className="h-[640px]" />
-                      )}
-                      {slot.status === "error" && (
-                        <div role="alert" className="grid h-64 place-items-center rounded-xl border border-destructive/50 p-6 text-center">
-                          <div>
-                            <p className="leading-relaxed">{slot.message}</p>
-                            
-                            <button type="button" onClick={() => generate(side)} className="btn-quiet btn-sm mt-4">
-                              <RefreshCw className="size-4" aria-hidden="true" />
-                              이쪽만 다시 만들기
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      {slot.status === "idle" && (
-                        <div className="grid h-64 place-items-center rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                          아직 없음
-                        </div>
-                      )}
-                      {slot.status === "done" && (
-                        <button type="button" onClick={() => generate(side)} disabled={generating} className="text-sm text-muted-foreground underline hover:text-foreground">
-                          이쪽만 다시 만들기
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-10 border-t border-input pt-8">
-                <h3 className="font-bold">직접 눌러 보고 판단하세요</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  화려함보다 작동, 계산, 잘못된 입력 처리, 내 의도와의 일치를 보세요.
-                </p>
-                <dl className="mt-4 grid gap-x-8 gap-y-4 text-[15px] leading-relaxed md:grid-cols-2">
-                  <div>
-                    <dt className="font-semibold">After가 확실히 다르다</dt>
-                    <dd className="text-muted-foreground">구체적으로 쓴 것이 만든 차이입니다.</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold">겉은 비슷한데 기능이 다르다</dt>
-                    <dd className="text-muted-foreground">프롬프트는 기능에도 영향을 줍니다.</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold">둘이 비슷하다</dt>
-                    <dd className="text-muted-foreground">처음부터 잘 쓴 것입니다.</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold">Before가 더 좋다</dt>
-                    <dd className="text-muted-foreground">AI가 항상 정답은 아닙니다. 고르는 건 사람입니다.</dd>
-                  </div>
-                </dl>
-                <p className="mt-4 text-sm text-muted-foreground">
-                  AI의 결과는 만들 때마다 달라집니다. 한 번으로 단정하지 마세요.
-                </p>
-              </div>
+              );
+            })}
+          </div>
+          <div className="mt-8 border-t border-input pt-8">
+          <h3 className="font-bold">직접 눌러 보고 판단하세요</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            화려함보다 작동, 계산, 잘못된 입력 처리, 내 의도와의 일치를 보세요.
+          </p>
+          <dl className="mt-4 grid gap-x-8 gap-y-4 text-[15px] leading-relaxed md:grid-cols-2">
+            <div>
+              <dt className="font-semibold">After가 확실히 다르다</dt>
+              <dd className="text-muted-foreground">구체적으로 쓴 것이 만든 차이입니다.</dd>
             </div>
-          )}
+            <div>
+              <dt className="font-semibold">겉은 비슷한데 기능이 다르다</dt>
+              <dd className="text-muted-foreground">프롬프트는 기능에도 영향을 줍니다.</dd>
+            </div>
+            <div>
+              <dt className="font-semibold">둘이 비슷하다</dt>
+              <dd className="text-muted-foreground">처음부터 잘 쓴 것입니다.</dd>
+            </div>
+            <div>
+              <dt className="font-semibold">Before가 더 좋다</dt>
+              <dd className="text-muted-foreground">AI가 항상 정답은 아닙니다. 고르는 건 사람입니다.</dd>
+            </div>
+          </dl>
+          <p className="mt-4 text-sm text-muted-foreground">
+            AI의 결과는 만들 때마다 달라집니다. 한 번으로 단정하지 마세요.
+          </p>
+          </div>
         </section>
       )}
 
       {/* 4. 저장 */}
       <section aria-labelledby="s4">
         <h2 id="s4" className="text-2xl font-bold tracking-[-0.01em] lg:text-[1.75rem]">
-          {aiReady ? "4" : "3"}. 저장하기
+          3. 저장하기
         </h2>
         <p className="mt-1 max-w-[64ch] leading-relaxed text-muted-foreground">
           {analysis

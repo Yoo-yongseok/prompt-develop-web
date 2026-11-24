@@ -67,8 +67,7 @@ export function HeroDemo({ htmlByLevel }: { htmlByLevel: Record<number, string |
             key={active}
             html={html}
             title={`이 프롬프트로 실제 생성된 앱 (${step.label})`}
-            className="h-[520px] rounded-[28px] lg:h-[600px]"
-          />
+                      />
         ) : (
           <div className="grid h-[520px] place-items-center rounded-[28px] bg-card p-6 text-center text-muted-foreground">
             결과물 파일이 아직 없습니다.
