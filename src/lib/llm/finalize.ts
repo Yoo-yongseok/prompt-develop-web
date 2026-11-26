@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { getClient, MODEL, withSlot } from "./client";
+import { callAi, getClient, MODEL } from "./client";
 import type { FinalResult } from "./protocol";
 import type { LlmResult } from "./suggest";
 
@@ -45,7 +45,7 @@ export async function finalizePrompt(
   prompt: string,
   flow: string,
 ): Promise<LlmResult<FinalResult>> {
-  const response = await withSlot(() =>
+  const response = await callAi(() =>
     getClient().messages.parse({
       model: MODEL,
       max_tokens: 8000,

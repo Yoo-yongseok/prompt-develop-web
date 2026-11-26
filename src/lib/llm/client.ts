@@ -36,6 +36,30 @@ export async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** 요청이 몰려 거절(429)당했을 때 서버가 스스로 다시 보내는 횟수 */
+const MAX_BUSY_RETRIES = 5;
+
+/**
+ * AI 호출을 감싼다. 대기열(withSlot)로 동시 요청을 줄이고, 그래도 "요청이 몰림"으로 거절되면
+ * 간격을 늘려 가며 다시 보낸다.
+ *
+ * 대기열만으로는 부족하다. Vercel은 서버를 여러 대로 나눠 실행하고 대기열은 한 대의 메모리에만 있어서,
+ * 배포 환경 부하 시험에서 30명 동시 요청 146건 중 7건이 429로 실패했다. 기다리는 동안에는 자리를 비워
+ * 다른 요청이 먼저 나가게 하고, 여러 요청이 같은 순간에 다시 몰리지 않도록 대기 시간을 조금씩 흩는다.
+ */
+export async function callAi<T>(fn: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await withSlot(fn);
+    } catch (error) {
+      if (!(error instanceof Anthropic.RateLimitError) || attempt >= MAX_BUSY_RETRIES) throw error;
+      await sleep(1500 * (attempt + 1) + Math.random() * 2500);
+    }
+  }
+}
+
 let client: Anthropic | null = null;
 
 export function hasApiKey() {
@@ -44,9 +68,9 @@ export function hasApiKey() {
 
 /** API 키는 서버 환경변수 ANTHROPIC_API_KEY에서만 읽는다. 브라우저로 보내지 않는다. */
 export function getClient() {
-  // 한 반이 동시에 누르는 상황을 대비한다. 일시적 오류(429, 5xx, 연결 끊김)는 SDK가 간격을 늘려 가며
-  // 다시 시도하고, 한 번의 시도는 60초를 넘기지 않는다. (단위: 밀리초)
-  client ??= new Anthropic({ maxRetries: 3, timeout: 60_000 });
+  // 일시적 오류(5xx, 연결 끊김)는 SDK가 두 번까지 다시 시도하고, 한 번의 시도는 60초를 넘기지 않는다.
+  // (단위: 밀리초) 요청이 몰려 생기는 429는 callAi가 더 긴 간격으로 따로 다시 보낸다.
+  client ??= new Anthropic({ maxRetries: 2, timeout: 60_000 });
   return client;
 }
 

@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { getClient, MODEL, withSlot } from "./client";
+import { callAi, getClient, MODEL } from "./client";
 import type { LlmResult } from "./suggest";
 
 /** 이용 순서를 스스로 쓰기 어려운 학생을 위해, 2단계에서 정한 내용으로 순서 초안을 만든다. */
@@ -27,7 +27,7 @@ const Schema = z.object({ steps: z.array(z.string()) });
 export async function suggestFlow(
   prompt: string,
 ): Promise<LlmResult<{ steps: string[] }>> {
-  const response = await withSlot(() =>
+  const response = await callAi(() =>
     getClient().messages.parse({
       model: MODEL,
       max_tokens: 4000,

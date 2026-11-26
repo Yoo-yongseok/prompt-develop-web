@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { getClient, MODEL, withSlot } from "./client";
+import { callAi, getClient, MODEL } from "./client";
 import type { Suggestion } from "./protocol";
 
 /** 2단계: 학생이 쓴 사용 대상과 문제를 읽고 기능을 제안한다. 어떤 기능을 쓸지는 학생이 고른다. */
@@ -43,7 +43,7 @@ export type LlmResult<T> =
 export async function suggestFeatures(
   prompt: string,
 ): Promise<LlmResult<Suggestion>> {
-  const response = await withSlot(() =>
+  const response = await callAi(() =>
     getClient().messages.parse({
       model: MODEL,
       max_tokens: 8000,
