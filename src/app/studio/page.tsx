@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { StudioWorkbench } from "@/components/studio-workbench";
+import { PromptMaker } from "@/components/prompt-maker";
 
-export const metadata: Metadata = { title: "실험실 — 내 프롬프트 쓰고 다듬기" };
+export const metadata: Metadata = { title: "프롬프트 만들기" };
 
 export default function StudioPage() {
   return (
     <div className="wrap pb-[72px] lg:pb-[128px]">
-      <header className="pb-10 pt-12 lg:pb-16 lg:pt-20">
-        <h1 className="h-page">
-          프롬프트 실험실
-        </h1>
-        <p className="lead mt-6 max-w-[52ch]">
-          쓰고, 다듬고, 저장합니다.
-        </p>
+      <header className="pb-12 pt-12 lg:pb-20 lg:pt-20">
+        <h1 className="h-page">프롬프트 만들기</h1>
+        <p className="lead mt-5">세 단계를 차례로 하면 최종 프롬프트가 완성됩니다.</p>
       </header>
-      <StudioWorkbench />
+      <PromptMaker />
     </div>
   );
 }

@@ -14,11 +14,11 @@ const pretendard = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Prompt Lab — 같은 아이디어, 다른 프롬프트, 다른 결과물",
+    default: "Prompt Lab — 내가 풀고 싶은 문제를, AI가 알아듣는 말로",
     template: "%s | Prompt Lab",
   },
   description:
-    "내 아이디어를 프롬프트로 쓰고, AI와 함께 다듬고, 실제 결과물을 비교하며 배우는 진로 연계형 프롬프트 학습 사이트.",
+    "관심 있는 진로 분야의 문제를 찾고, AI와 함께 기능과 화면 순서를 정해 앱을 만들 프롬프트를 완성합니다.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

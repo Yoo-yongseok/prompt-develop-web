@@ -4,11 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const menus = [
-  { href: "/learn", label: "배우기" },
-  { href: "/explore", label: "아이디어 찾기" },
-  { href: "/studio", label: "실험실" },
-];
+const menus = [{ href: "/studio", label: "프롬프트 만들기" }];
 
 export function Logo() {
   return (

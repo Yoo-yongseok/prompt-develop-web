@@ -3,22 +3,11 @@ import Anthropic from "@anthropic-ai/sdk";
 
 /**
  * LLM 호출 설정은 이 폴더(src/lib/llm)에만 둔다.
- * 모델이나 제공사를 바꿀 때 여기와 improve.ts, generate.ts만 고치면 된다.
+ * 모델이나 제공사를 바꿀 때 여기와 suggest.ts, finalize.ts만 고치면 된다.
  */
 
-/** 프롬프트 개선에 쓰는 모델 */
-export const IMPROVE_MODEL = process.env.PROMPTLAB_IMPROVE_MODEL ?? "claude-opus-5-5";
-
-/**
- * 미니 웹앱 생성에 쓰는 모델과 설정.
- * Before와 After 요청은 반드시 이 값을 똑같이 쓴다. 요청마다 달라지는 것은 사용자 프롬프트뿐이다.
- */
-export const CODEGEN = {
-  model: process.env.PROMPTLAB_CODEGEN_MODEL ?? "claude-opus-5-5",
-  maxTokens: 32000,
-  // 완성품이 아니라 비교용 시제품이므로 속도를 우선한다.
-  effort: "low",
-} as const;
+/** 기능 제안과 최종 프롬프트 정리에 쓰는 모델 */
+export const MODEL = process.env.PROMPTLAB_MODEL ?? "claude-opus-5-5";
 
 let client: Anthropic | null = null;
 

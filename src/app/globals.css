@@ -62,44 +62,45 @@
 
 /*
  * Prompt Lab 색 체계
- * - 바탕은 흰색과 아주 옅은 회색. 포인트는 코발트 블루 한 가지이며 버튼과 강조에만 쓴다.
- * - 짙은 네이비 구역(.dark)은 페이지당 1~2곳만 쓴다.
+ * - 바탕은 흰색과 아주 옅은 회색, 글자는 짙은 남색.
+ * - 포인트는 부드러운 파스텔 민트 한 가지. 버튼과 선택 표시의 바탕색으로 쓴다.
+ *   파스텔은 글자색으로 쓰면 읽기 어려우므로, 글자 강조에는 같은 계열의 짙은 색(--sky)을 쓴다.
  * - 그라데이션, 글로우, 블러 장식은 쓰지 않는다.
  */
 :root {
   --background: #ffffff;
   --foreground: #0e1730;
-  --card: #f3f5f9;
+  --card: #f4f6f8;
   --card-foreground: #0e1730;
   --popover: #ffffff;
   --popover-foreground: #0e1730;
-  --primary: #2450f0;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f5f9;
+  --primary: #a9e2c8;
+  --primary-foreground: #0e1730;
+  --secondary: #f4f6f8;
   --secondary-foreground: #0e1730;
-  --muted: #f3f5f9;
+  --muted: #f4f6f8;
   --muted-foreground: #3d465a;
-  --accent: #e9eefe;
+  --accent: #e4f6ed;
   --accent-foreground: #0e1730;
   --destructive: #cf2a37;
-  --border: #dfe3ec;
-  --input: #c6cddb;
-  --ring: #2450f0;
-  --sky: #2450f0;
-  --chart-1: #2450f0;
+  --border: #dfe3ea;
+  --input: #c3cad6;
+  --ring: #1d7a58;
+  --sky: #1d7a58;
+  --chart-1: #a9e2c8;
   --chart-2: #0e1730;
-  --chart-3: #566076;
-  --chart-4: #c6cddb;
-  --chart-5: #f3f5f9;
+  --chart-3: #3d465a;
+  --chart-4: #c3cad6;
+  --chart-5: #f4f6f8;
   --radius: 0.75rem;
-  --sidebar: #f3f5f9;
+  --sidebar: #f4f6f8;
   --sidebar-foreground: #0e1730;
-  --sidebar-primary: #2450f0;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e9eefe;
+  --sidebar-primary: #a9e2c8;
+  --sidebar-primary-foreground: #0e1730;
+  --sidebar-accent: #e4f6ed;
   --sidebar-accent-foreground: #0e1730;
-  --sidebar-border: #dfe3ec;
-  --sidebar-ring: #2450f0;
+  --sidebar-border: #dfe3ea;
+  --sidebar-ring: #1d7a58;
 }
 
 .dark {
@@ -109,7 +110,7 @@
   --card-foreground: #f1f3fa;
   --popover: #18234a;
   --popover-foreground: #f1f3fa;
-  --primary: #8ea6ff;
+  --primary: #a9e2c8;
   --primary-foreground: #0e1730;
   --secondary: #18234a;
   --secondary-foreground: #f1f3fa;
@@ -120,8 +121,8 @@
   --destructive: #ff8a96;
   --border: #2b3966;
   --input: #3a4a80;
-  --ring: #8ea6ff;
-  --sky: #a9bcff;
+  --ring: #a9e2c8;
+  --sky: #a9e2c8;
   color: var(--foreground);
 }
 
@@ -139,12 +140,18 @@
     word-break: keep-all;
     overflow-wrap: anywhere;
   }
+  /* 입력칸의 안내 글은 실제로 쓴 글과 헷갈리지 않도록 옅은 회색으로 */
+  ::placeholder {
+    color: #9aa3b3;
+    opacity: 1;
+    font-weight: 400;
+  }
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
   ::selection {
-    background: color-mix(in oklab, var(--primary) 25%, transparent);
+    background: color-mix(in oklab, var(--primary) 60%, transparent);
   }
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -183,7 +190,7 @@
     @apply inline-flex h-[52px] items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-bold text-primary-foreground transition-colors duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45;
   }
   .btn-primary:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--primary) 86%, var(--foreground));
+    background: color-mix(in oklab, var(--primary) 88%, var(--foreground));
   }
   .btn-quiet {
     @apply inline-flex h-[52px] items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 text-base font-semibold text-foreground transition-colors duration-150 hover:bg-card active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45;
@@ -195,7 +202,7 @@
     @apply rounded-[20px] bg-card;
   }
   .field {
-    @apply w-full resize-y rounded-[20px] border border-input bg-background p-5 text-base leading-[1.7] transition-colors duration-150 placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none;
+    @apply w-full resize-y rounded-[20px] border border-input bg-background p-5 text-base leading-[1.7] transition-colors duration-150 focus:border-ring focus:outline-none;
   }
   .seg {
     @apply flex gap-1 rounded-xl bg-card p-1;
