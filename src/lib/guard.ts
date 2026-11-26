@@ -12,13 +12,14 @@ import "server-only";
  * Upstash Redis 같은 공유 저장소로 바꾼다.
  */
 
-type Kind = "suggest" | "finalize";
+type Kind = "suggest" | "flow" | "finalize";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
 const perIpPerHour: Record<Kind, number> = {
   suggest: Number(process.env.LIMIT_SUGGEST_PER_HOUR ?? 15),
+  flow: Number(process.env.LIMIT_FLOW_PER_HOUR ?? 15),
   finalize: Number(process.env.LIMIT_FINALIZE_PER_HOUR ?? 15),
 };
 const globalPerDay = Number(process.env.LIMIT_TOTAL_PER_DAY ?? 600);

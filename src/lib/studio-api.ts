@@ -72,6 +72,11 @@ export function requestSuggest(prompt: string, code: string, signal?: AbortSigna
   return post<Suggestion>("/api/suggest", { prompt }, code, signal);
 }
 
+/** 3단계 보조: 2단계에서 정한 프롬프트를 보내 앱 이용 순서 초안을 받는다. */
+export function requestFlow(prompt: string, code: string, signal?: AbortSignal) {
+  return post<{ steps: string[] }>("/api/flow", { prompt }, code, signal);
+}
+
 /** 3단계: 정한 프롬프트와 이용 순서를 보내 최종 프롬프트를 받는다. */
 export function requestFinalize(prompt: string, flow: string, code: string, signal?: AbortSignal) {
   return post<FinalResult>("/api/finalize", { prompt, flow }, code, signal);

@@ -38,6 +38,7 @@ import {
   fetchStatus,
   getClassCode,
   requestFinalize,
+  requestFlow,
   requestSuggest,
   setClassCode,
   StudioApiError,
@@ -121,6 +122,10 @@ export function PromptMaker() {
   const [suggestError, setSuggestError] = useState<string | null>(null);
   const [finalizing, setFinalizing] = useState(false);
   const [finalError, setFinalError] = useState<string | null>(null);
+
+  const [drafting, setDrafting] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
+  const [confirmDraft, setConfirmDraft] = useState(false);
 
   const [custom, setCustom] = useState("");
   const [confirmFill, setConfirmFill] = useState(false);
@@ -209,6 +214,28 @@ export function PromptMaker() {
     setCustom("");
     if (data.chosen.some((c) => c.name === name)) return;
     toggle({ name, detail: "", reason: "" });
+  }
+
+  /** 순서를 쓰기 어려운 학생을 위해 AI가 초안을 써 준다. 학생이 고쳐 쓰는 것이 전제다. */
+  async function draftFlow(force = false) {
+    if (drafting || data.prompt.trim().length < 10) return;
+    if (!force && data.flow.trim()) {
+      setConfirmDraft(true);
+      return;
+    }
+    setConfirmDraft(false);
+    setDrafting(true);
+    setDraftError(null);
+    try {
+      setClassCode(code.trim());
+      const { steps } = await requestFlow(data.prompt.trim(), code.trim(), aborter.current?.signal);
+      patch({ flow: steps.map((s, i) => `${i + 1}. ${s}`).join("\n") });
+    } catch (e) {
+      onAuthError(e);
+      setDraftError(e instanceof Error ? e.message : "다시 시도해 주세요.");
+    } finally {
+      setDrafting(false);
+    }
   }
 
   async function finalize() {
@@ -533,11 +560,53 @@ export function PromptMaker() {
       <section aria-labelledby="step3">
         <StepHead n={3} title="화면 순서 정하기" sub="사용자가 앱을 열어서 무엇을 차례로 하는지 적으면, 최종 프롬프트로 정리해 줍니다." />
 
-        <label htmlFor="flow" className="mt-8 block font-bold">
-          앱을 쓰는 순서
-        </label>
+        {data.prompt.trim() ? (
+          <details className="mt-8 rounded-[20px] bg-card px-6 py-4">
+            <summary className="cursor-pointer font-semibold">
+              2단계에서 정한 내용은 자동으로 함께 들어갑니다. 다시 쓰지 않아도 됩니다.
+            </summary>
+            <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-[1.65] text-muted-foreground">{data.prompt.trim()}</pre>
+          </details>
+        ) : (
+          <p className="mt-8 rounded-[20px] bg-card px-6 py-4 font-semibold">
+            먼저 2단계를 마쳐 주세요. 2단계에서 정한 내용이 여기에 자동으로 이어집니다.
+          </p>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+          <label htmlFor="flow" className="font-bold">
+            앱을 쓰는 순서
+          </label>
+          {aiReady && (
+            <button
+              type="button"
+              onClick={() => draftFlow()}
+              disabled={drafting || finalizing || needCode || data.prompt.trim().length < 10}
+              className="btn-quiet btn-sm"
+            >
+              {drafting ? "AI가 쓰는 중…" : "AI가 제안한 순서 받기"}
+            </button>
+          )}
+        </div>
+        {confirmDraft && (
+          <div role="alert" className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-accent px-4 py-3 text-sm">
+            <span>지금 쓴 순서가 AI의 제안으로 바뀝니다.</span>
+            <button type="button" className="font-bold underline" onClick={() => draftFlow(true)}>
+              바꾸기
+            </button>
+            <button type="button" className="underline" onClick={() => setConfirmDraft(false)}>
+              취소
+            </button>
+          </div>
+        )}
+        {draftError && (
+          <p role="alert" className="mt-3 rounded-xl border border-destructive/60 px-5 py-4 leading-relaxed">
+            {draftError}
+          </p>
+        )}
         <textarea
           id="flow"
+          disabled={drafting}
           value={data.flow}
           onChange={(e) => patch({ flow: e.target.value })}
           rows={6}
@@ -546,7 +615,7 @@ export function PromptMaker() {
           className="field mt-3"
         />
         <p className="mt-2 text-sm text-muted-foreground">
-          처음 보는 화면, 누르는 것, 그다음 나오는 화면 순서로 번호를 붙여 쓰세요.
+          처음 보는 화면, 누르는 것, 그다음 나오는 화면 순서로 쓰세요. 어렵다면 AI의 제안을 받아 내 생각대로 고쳐도 됩니다.
         </p>
 
         <div className="mt-5 flex flex-wrap items-center gap-4">
@@ -561,7 +630,9 @@ export function PromptMaker() {
           )}
           {finalizing && <span className="text-sm text-muted-foreground">15~30초 걸립니다.</span>}
           {!finalizing && !canFinalize && (
-            <span className="text-sm text-muted-foreground">2단계의 프롬프트와 이용 순서를 먼저 써 주세요.</span>
+            <span className="text-sm text-muted-foreground">
+              {data.prompt.trim().length < 10 ? "2단계를 먼저 마쳐 주세요." : "앱을 쓰는 순서를 10자 이상 써 주세요."}
+            </span>
           )}
         </div>
 
