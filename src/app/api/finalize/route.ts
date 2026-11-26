@@ -34,11 +34,12 @@ export async function POST(request: Request) {
         result.reason === "refused"
           ? "AI가 이 내용으로는 도와줄 수 없다고 답했습니다. 내용을 확인해 주세요."
           : "AI의 답을 끝까지 받지 못했습니다. 다시 시도해 주세요.",
+        result.reason !== "refused",
       );
     }
     return Response.json(result.data);
   } catch (error) {
-    const { status, message } = describeError(error);
-    return jsonError(status, message);
+    const { status, message, retryable } = describeError(error);
+    return jsonError(status, message, retryable);
   }
 }

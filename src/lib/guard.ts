@@ -17,12 +17,14 @@ type Kind = "suggest" | "flow" | "finalize";
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
+// 학교에서는 한 반 전체가 같은 공인 IP로 접속한다. 그래서 IP별 한도는 학생 한 명이 아니라
+// 한 학급(약 30명)이 한 시간 동안 다시 시도까지 하며 쓰는 양을 기준으로 넉넉하게 잡는다.
 const perIpPerHour: Record<Kind, number> = {
-  suggest: Number(process.env.LIMIT_SUGGEST_PER_HOUR ?? 15),
-  flow: Number(process.env.LIMIT_FLOW_PER_HOUR ?? 15),
-  finalize: Number(process.env.LIMIT_FINALIZE_PER_HOUR ?? 15),
+  suggest: Number(process.env.LIMIT_SUGGEST_PER_HOUR ?? 200),
+  flow: Number(process.env.LIMIT_FLOW_PER_HOUR ?? 200),
+  finalize: Number(process.env.LIMIT_FINALIZE_PER_HOUR ?? 200),
 };
-const globalPerDay = Number(process.env.LIMIT_TOTAL_PER_DAY ?? 600);
+const globalPerDay = Number(process.env.LIMIT_TOTAL_PER_DAY ?? 2000);
 
 const hits = new Map<string, number[]>();
 let globalHits: number[] = [];
@@ -82,6 +84,6 @@ export function findPersonalInfo(text: string): string | null {
   return null;
 }
 
-export function jsonError(status: number, message: string) {
-  return Response.json({ error: message }, { status });
+export function jsonError(status: number, message: string, retryable = false) {
+  return Response.json({ error: message, retryable }, { status });
 }

@@ -27,14 +27,15 @@ function headers(code: string) {
   };
 }
 
-async function errorMessage(res: Response) {
+async function readError(res: Response): Promise<{ message: string; retryable: boolean }> {
   try {
-    const data = (await res.json()) as { error?: string };
-    if (data.error) return data.error;
+    const data = (await res.json()) as { error?: string; retryable?: boolean };
+    if (data.error) return { message: data.error, retryable: Boolean(data.retryable) };
   } catch {
     /* 본문이 JSON이 아니면 아래 기본 문장을 쓴다 */
   }
-  return "요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
+  // 우리 서버가 만든 응답이 아니면(호스팅의 시간 초과 등) 다시 시도해 볼 만하다.
+  return { message: "요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.", retryable: res.status >= 500 };
 }
 
 export class StudioApiError extends Error {
@@ -56,15 +57,40 @@ export async function fetchStatus(): Promise<{ aiReady: boolean; codeRequired: b
   }
 }
 
+/** 다시 시도하기 전에 기다리는 시간(밀리초). 여러 학생이 같은 순간에 다시 보내지 않도록 조금씩 흩는다. */
+const RETRY_WAITS = [2000, 5000];
+
+const wait = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    const t = window.setTimeout(resolve, ms);
+    signal?.addEventListener("abort", () => {
+      window.clearTimeout(t);
+      reject(new DOMException("aborted", "AbortError"));
+    });
+  });
+
+/**
+ * 우리 서버의 AI API를 부른다. 요청이 몰려 생기는 일시적 오류는 학생에게 보이기 전에 두 번까지 다시 시도한다.
+ * 접속 코드 오류, 개인정보 차단, 횟수 초과처럼 다시 보내도 소용없는 오류는 바로 알린다.
+ */
 async function post<T>(url: string, body: unknown, code: string, signal?: AbortSignal): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(url, { method: "POST", headers: headers(code), body: JSON.stringify(body), signal });
-  } catch {
-    throw new StudioApiError("서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.", 0);
+  let last = new StudioApiError("요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.", 0);
+  for (let attempt = 0; attempt <= RETRY_WAITS.length; attempt++) {
+    if (attempt > 0) await wait(RETRY_WAITS[attempt - 1] + Math.random() * 1500, signal);
+    let res: Response;
+    try {
+      res = await fetch(url, { method: "POST", headers: headers(code), body: JSON.stringify(body), signal });
+    } catch (e) {
+      if (signal?.aborted) throw e;
+      last = new StudioApiError("서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.", 0);
+      continue;
+    }
+    if (res.ok) return await res.json();
+    const err = await readError(res);
+    last = new StudioApiError(err.message, res.status);
+    if (!err.retryable) break;
   }
-  if (!res.ok) throw new StudioApiError(await errorMessage(res), res.status);
-  return await res.json();
+  throw last;
 }
 
 /** 2단계: 사용 대상과 문제를 보내 기능을 제안받는다. */

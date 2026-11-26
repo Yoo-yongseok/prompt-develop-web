@@ -61,9 +61,13 @@ LLM 호출은 `src/lib/llm/`에만 있다. 모델을 바꾸려면 `client.ts` �
 | `ANTHROPIC_API_KEY` | 예 | 워크스페이스 범위로 발급한 키. 없으면 2·3단계는 AI 없이 직접 쓰는 방식으로 동작한다 |
 | `CLASS_ACCESS_CODE` | 아니오 | 설정하면 이 코드를 입력한 사람만 AI 기능을 쓸 수 있다. 공개 배포 시 설정 권장 |
 | `PROMPTLAB_MODEL` | 아니오 | 기본값 `claude-opus-5-5` |
-| `LIMIT_SUGGEST_PER_HOUR`, `LIMIT_FLOW_PER_HOUR`, `LIMIT_FINALIZE_PER_HOUR`, `LIMIT_TOTAL_PER_DAY` | 아니오 | 기본값 15, 15, 15, 600 |
+| `PROMPTLAB_MAX_CONCURRENT` | 아니오 | 동시에 AI로 보내는 요청 수의 상한. 기본값 16. 넘는 요청은 서버에서 차례를 기다린다 |
+| `LIMIT_SUGGEST_PER_HOUR`, `LIMIT_FLOW_PER_HOUR`, `LIMIT_FINALIZE_PER_HOUR`, `LIMIT_TOTAL_PER_DAY` | 아니오 | 기본값 200, 200, 200, 2000. 학교는 한 반이 같은 IP로 접속하므로 IP별 한도를 학급 단위로 잡았다 |
 
 ### 알아 둘 것
+
+- **한 반 동시 사용**: 30명이 같은 순간에 누르는 상황을 부하 시험으로 확인했다. 동시 요청이 25건을 넘으면 AI 서버가 429로 거절해서, 서버가 16건씩만 내보내고 나머지는 대기시킨다. 30명 동시 3단계 + 다시 돌리기 2라운드, 150건이 모두 성공했고 가장 오래 걸린 응답은 약 40초였다. 그래도 일시적 오류가 나면 브라우저가 두 번까지 자동으로 다시 시도한다.
+- 대기열은 서버 인스턴스의 메모리에 있다. Vercel에서 인스턴스가 여러 개 뜨면 합계가 상한을 넘을 수 있고, 그때는 위의 자동 재시도가 받쳐 준다.
 
 - 횟수 제한은 서버 메모리에 저장한다. Vercel에서는 인스턴스마다 따로 세어져 정확한 상한이 아니다. 비용의 최종 상한은 Claude Console의 워크스페이스 지출 한도로 건다.
 - 학생이 쓴 글은 서버에 저장하거나 로그로 남기지 않는다. 작성 내용은 학생 브라우저의 LocalStorage에만 있다.

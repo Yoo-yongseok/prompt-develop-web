@@ -445,7 +445,7 @@ export function PromptMaker() {
             <button type="button" onClick={suggest} disabled={!canSuggest || suggesting || needCode} className="btn-primary">
               {suggesting ? "AI가 읽는 중…" : data.suggestion ? "다시 제안받기" : "기능 제안받기"}
             </button>
-            {suggesting && <span className="text-sm text-muted-foreground">10~20초 걸립니다.</span>}
+            {suggesting && <span className="text-sm text-muted-foreground">10~20초 걸립니다. 여럿이 함께 누르면 조금 더 걸립니다.</span>}
           </div>
         )}
 
@@ -628,7 +628,7 @@ export function PromptMaker() {
               합쳐서 최종 프롬프트 만들기
             </button>
           )}
-          {finalizing && <span className="text-sm text-muted-foreground">15~30초 걸립니다.</span>}
+          {finalizing && <span className="text-sm text-muted-foreground">20~40초 걸립니다. 기다리는 동안 다시 누르지 않아도 됩니다.</span>}
           {!finalizing && !canFinalize && (
             <span className="text-sm text-muted-foreground">
               {data.prompt.trim().length < 10 ? "2단계를 먼저 마쳐 주세요." : "앱을 쓰는 순서를 10자 이상 써 주세요."}

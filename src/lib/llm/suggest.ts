@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { getClient, MODEL } from "./client";
+import { getClient, MODEL, withSlot } from "./client";
 import type { Suggestion } from "./protocol";
 
 /** 2단계: 학생이 쓴 사용 대상과 문제를 읽고 기능을 제안한다. 어떤 기능을 쓸지는 학생이 고른다. */
@@ -30,23 +30,35 @@ praise
 
 const Schema = z.object({
   intro: z.string(),
-  features: z.array(z.object({ name: z.string(), detail: z.string(), reason: z.string() })),
+  features: z.array(
+    z.object({ name: z.string(), detail: z.string(), reason: z.string() }),
+  ),
   praise: z.string(),
 });
 
-export type LlmResult<T> = { ok: true; data: T } | { ok: false; reason: "refused" | "truncated" | "unparsed" };
+export type LlmResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; reason: "refused" | "truncated" | "unparsed" };
 
-export async function suggestFeatures(prompt: string): Promise<LlmResult<Suggestion>> {
-  const response = await getClient().messages.parse({
-    model: MODEL,
-    max_tokens: 8000,
-    system: SYSTEM,
-    messages: [{ role: "user", content: `<학생의_글>\n${prompt}\n</학생의_글>` }],
-    output_config: { effort: "low", format: zodOutputFormat(Schema) },
-  });
+export async function suggestFeatures(
+  prompt: string,
+): Promise<LlmResult<Suggestion>> {
+  const response = await withSlot(() =>
+    getClient().messages.parse({
+      model: MODEL,
+      max_tokens: 8000,
+      system: SYSTEM,
+      messages: [
+        { role: "user", content: `<학생의_글>\n${prompt}\n</학생의_글>` },
+      ],
+      output_config: { effort: "low", format: zodOutputFormat(Schema) },
+    }),
+  );
 
-  if (response.stop_reason === "refusal") return { ok: false, reason: "refused" };
-  if (response.stop_reason === "max_tokens") return { ok: false, reason: "truncated" };
+  if (response.stop_reason === "refusal")
+    return { ok: false, reason: "refused" };
+  if (response.stop_reason === "max_tokens")
+    return { ok: false, reason: "truncated" };
   if (!response.parsed_output) return { ok: false, reason: "unparsed" };
 
   const out = response.parsed_output;

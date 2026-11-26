@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { getClient, MODEL } from "./client";
+import { getClient, MODEL, withSlot } from "./client";
 import type { FinalResult } from "./protocol";
 import type { LlmResult } from "./suggest";
 
@@ -41,22 +41,29 @@ const Schema = z.object({
   assumptions: z.array(z.string()),
 });
 
-export async function finalizePrompt(prompt: string, flow: string): Promise<LlmResult<FinalResult>> {
-  const response = await getClient().messages.parse({
-    model: MODEL,
-    max_tokens: 8000,
-    system: SYSTEM,
-    messages: [
-      {
-        role: "user",
-        content: `<학생이_정한_프롬프트>\n${prompt}\n</학생이_정한_프롬프트>\n\n<학생이_적은_앱_이용_순서>\n${flow}\n</학생이_적은_앱_이용_순서>`,
-      },
-    ],
-    output_config: { effort: "low", format: zodOutputFormat(Schema) },
-  });
+export async function finalizePrompt(
+  prompt: string,
+  flow: string,
+): Promise<LlmResult<FinalResult>> {
+  const response = await withSlot(() =>
+    getClient().messages.parse({
+      model: MODEL,
+      max_tokens: 8000,
+      system: SYSTEM,
+      messages: [
+        {
+          role: "user",
+          content: `<학생이_정한_프롬프트>\n${prompt}\n</학생이_정한_프롬프트>\n\n<학생이_적은_앱_이용_순서>\n${flow}\n</학생이_적은_앱_이용_순서>`,
+        },
+      ],
+      output_config: { effort: "low", format: zodOutputFormat(Schema) },
+    }),
+  );
 
-  if (response.stop_reason === "refusal") return { ok: false, reason: "refused" };
-  if (response.stop_reason === "max_tokens") return { ok: false, reason: "truncated" };
+  if (response.stop_reason === "refusal")
+    return { ok: false, reason: "refused" };
+  if (response.stop_reason === "max_tokens")
+    return { ok: false, reason: "truncated" };
   if (!response.parsed_output) return { ok: false, reason: "unparsed" };
   return { ok: true, data: response.parsed_output };
 }
