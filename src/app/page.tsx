@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { makingPurpose, makingSteps } from "@/content/making-of";
 
 /** 오늘 수업에서 하는 세 단계. /studio의 단계와 같은 순서다. */
 const steps = [
@@ -103,54 +102,6 @@ export default function Home() {
           <Link href="/studio" className="btn-primary mt-10 w-full sm:w-auto">
             시작하기
           </Link>
-        </div>
-      </section>
-
-      <section id="making" aria-labelledby="making-h" className="dark scroll-mt-16 bg-background">
-        <div className="wrap section">
-          <div className="max-w-[900px]">
-            <h2 id="making-h" className="h-section">
-              이 웹사이트도 같은 방법으로 만들었습니다
-            </h2>
-            <p className="lead mt-6">
-              AI가 알아서 다 만든 것은 아닙니다. 사람이 기획하고, 요청하고, 확인하고, 다시 고쳤습니다.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-12 lg:mt-16 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-20">
-            <div>
-              <h3 className="text-xl font-bold">만들게 된 목적</h3>
-              <p className="mt-3 leading-[1.75] text-muted-foreground">{makingPurpose}</p>
-            </div>
-            <ol>
-              {makingSteps.map((step, i) => (
-                <li key={step.title} className="flex gap-5 border-t border-border py-7 last:border-b lg:gap-8">
-                  <span className="w-6 shrink-0 text-xl font-bold tabular-nums text-sky">{i + 1}</span>
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <h3 className={"text-xl font-bold " + (step.status === "done" ? "" : "text-muted-foreground")}>
-                        {step.title}
-                      </h3>
-                      {step.who && <span className="text-sm text-muted-foreground">{step.who}</span>}
-                    </div>
-                    {step.status === "done" ? (
-                      <>
-                        <p className="mt-2.5 leading-[1.75] text-foreground/85">{step.body}</p>
-                        {step.quote && (
-                          <p className="mt-4 rounded-xl bg-card px-5 py-4">
-                            <span className="mb-1 block text-sm text-muted-foreground">실제 요청</span>
-                            {step.quote}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <p className="mt-1.5 text-sm text-muted-foreground">진행 전</p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
         </div>
       </section>
     </>

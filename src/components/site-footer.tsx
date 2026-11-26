@@ -9,9 +9,6 @@ export function SiteFooter() {
           <Link href="/studio" className="hover:text-foreground">
             프롬프트 만들기
           </Link>
-          <Link href="/#making" className="hover:text-foreground">
-            만든 과정
-          </Link>
         </nav>
       </div>
     </footer>
